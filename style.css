@@ -1,9 +1,0 @@
-.preview-box {
-    border: 1px solid #ddd;
-    padding: 15px;
-    min-height: 200px;
-}
-#previewModal .modal-body {
-    max-height: 80vh;
-    overflow-y: auto;
-}
