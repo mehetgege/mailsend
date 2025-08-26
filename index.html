@@ -1,155 +1,33 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HTML Splitter - Profesyonel</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>HTML Splitter - Gerçek ZIP (JSZip)</title>
+
+    <!-- Stil & ikon CDN'leri -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
     <style>
-        :root {
-            --primary-color: #4361ee;
-            --secondary-color: #3f37c9;
-            --success-color: #4cc9f0;
-            --light-bg: #f7f9fc;
-            --dark-bg: #0b1220;
-            --text-dark: #2b2d42;
-            --text-light: #8d99ae;
+        :root{
+            --primary-color:#4361ee; --secondary-color:#3f37c9;
+            --success-color:#4cc9f0; --light-bg:#f7f9fc;
+            --dark-bg:#0b1220; --text-dark:#2b2d42; --text-light:#8d99ae;
         }
-        
-        body {
-            padding-top: 20px;
-            background: var(--light-bg);
-            color: var(--text-dark);
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        
-        .card {
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-            border: none;
-            margin-bottom: 20px;
-            transition: transform 0.3s ease;
-        }
-        
-        .card:hover {
-            transform: translateY(-5px);
-        }
-        
-        .card-header {
-            background-color: white;
-            border-bottom: 1px solid rgba(0,0,0,0.1);
-            font-weight: 600;
-            padding: 15px 20px;
-            border-radius: 12px 12px 0 0 !important;
-        }
-        
-        .card-body {
-            padding: 20px;
-        }
-        
-        pre.log {
-            height: 260px;
-            overflow: auto;
-            background: var(--dark-bg);
-            color: #cfe8ff;
-            padding: 12px;
-            border-radius: 6px;
-            font-family: 'Consolas', 'Monaco', monospace;
-            font-size: 14px;
-        }
-        
-        .btn-primary {
-            background-color: var(--primary-color);
-            border-color: var(--primary-color);
-        }
-        
-        .btn-primary:hover {
-            background-color: var(--secondary-color);
-            border-color: var(--secondary-color);
-        }
-        
-        .btn-success {
-            background-color: var(--success-color);
-            border-color: var(--success-color);
-        }
-        
-        .progress {
-            height: 10px;
-            border-radius: 5px;
-            margin-bottom: 10px;
-        }
-        
-        .progress-bar {
-            border-radius: 5px;
-            transition: width 0.5s ease;
-        }
-        
-        .app-header {
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-            color: white;
-            padding: 20px;
-            border-radius: 12px;
-            margin-bottom: 25px;
-        }
-        
-        .feature-icon {
-            font-size: 24px;
-            margin-right: 10px;
-            color: var(--primary-color);
-        }
-        
-        .file-list {
-            max-height: 200px;
-            overflow-y: auto;
-        }
-        
-        .file-list li {
-            padding: 5px 0;
-            border-bottom: 1px solid rgba(0,0,0,0.05);
-        }
-        
-        .preview-box {
-            max-height: 160px;
-            overflow: auto;
-            background: #fff;
-            padding: 8px;
-            border-radius: 6px;
-            margin-top: 6px;
-            border: 1px solid #eee;
-            font-size: 13px;
-        }
-        
-        .option-group {
-            background-color: rgba(67, 97, 238, 0.05);
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 15px;
-        }
-        
-        .stats-box {
-            text-align: center;
-            padding: 15px;
-            background-color: rgba(76, 201, 240, 0.1);
-            border-radius: 8px;
-            margin-top: 15px;
-        }
-        
-        .stats-number {
-            font-size: 24px;
-            font-weight: bold;
-            color: var(--primary-color);
-        }
-        
-        @media (max-width: 768px) {
-            .card {
-                margin-bottom: 15px;
-            }
-            
-            .app-header {
-                padding: 15px;
-            }
-        }
+        body{ padding-top:20px; background:var(--light-bg); color:var(--text-dark); font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .card{ border-radius:12px; box-shadow:0 4px 12px rgba(0,0,0,0.08); border:none; margin-bottom:20px; transition:transform .25s; }
+        .card:hover{ transform:translateY(-4px); }
+        .card-header{ background-color:white; border-bottom:1px solid rgba(0,0,0,.1); font-weight:600; padding:15px 20px; border-radius:12px 12px 0 0 !important; }
+        .card-body{ padding:20px; }
+        pre.log{ height:260px; overflow:auto; background:var(--dark-bg); color:#cfe8ff; padding:12px; border-radius:6px; font-family:Consolas,Monaco,monospace; font-size:14px; }
+        .btn-primary{ background-color:var(--primary-color); border-color:var(--primary-color); }
+        .btn-primary:hover{ background-color:var(--secondary-color); border-color:var(--secondary-color); }
+        .app-header{ background:linear-gradient(135deg,var(--primary-color),var(--secondary-color)); color:white; padding:20px; border-radius:12px; margin-bottom:25px; }
+        .preview-box{ max-height:160px; overflow:auto; background:#fff; padding:8px; border-radius:6px; margin-top:6px; border:1px solid #eee; font-size:13px; }
+        .option-group{ background-color:rgba(67,97,238,.05); padding:15px; border-radius:8px; margin-bottom:15px; }
+        .stats-box{ text-align:center; padding:15px; background-color:rgba(76,201,240,.1); border-radius:8px; margin-top:15px; }
+        @media (max-width:768px){ .card{ margin-bottom:15px; } .app-header{ padding:15px; } }
     </style>
 </head>
 <body>
@@ -158,22 +36,21 @@
             <div class="row align-items-center">
                 <div class="col-md-8">
                     <h1><i class="fas fa-cut"></i> HTML Splitter</h1>
-                    <p class="mb-0">Profesyonel, modern ve kullanımı kolay HTML bölücü</p>
+                    <p class="mb-0">Gerçek ZIP oluşturma — simülasyon yok.</p>
                 </div>
                 <div class="col-md-4 text-end">
                     <span class="badge bg-light text-dark"><i class="fas fa-clock"></i> <span id="current-time"></span></span>
                 </div>
             </div>
         </div>
-        
+
         <div class="row">
+            <!-- Sol -->
             <div class="col-lg-6">
                 <div class="card">
-                    <div class="card-header">
-                        <i class="fas fa-cog feature-icon"></i> Bölme Ayarları
-                    </div>
+                    <div class="card-header"><i class="fas fa-cog"></i> Bölme Ayarları</div>
                     <div class="card-body">
-                        <form id="splitForm">
+                        <form id="splitForm" onsubmit="return false;">
                             <div class="option-group">
                                 <h5><i class="fas fa-file-upload"></i> Giriş Dosyası</h5>
                                 <div class="mb-3">
@@ -182,10 +59,10 @@
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label">Veya metin içeriğini doğrudan yapıştır</label>
-                                    <textarea class="form-control" id="textInput" rows="4" placeholder="HTML içeriğini buraya yapıştır..."></textarea>
+                                    <textarea class="form-control" id="textInput" rows="6" placeholder="HTML içeriğini buraya yapıştır..."></textarea>
                                 </div>
                             </div>
-                            
+
                             <div class="option-group">
                                 <h5><i class="fas fa-sliders-h"></i> Bölme Seçenekleri</h5>
                                 <div class="row g-2 mb-3">
@@ -202,33 +79,25 @@
                                         <input class="form-control" type="number" id="maxValue" value="1800" min="1">
                                     </div>
                                 </div>
-                                
+
                                 <div class="mb-3">
                                     <label class="form-label">Çıktı Öneki</label>
                                     <input class="form-control" type="text" id="outputPrefix" value="part" placeholder="Dosya öneki">
-                                    <div class="form-text">Bölünmüş dosyalar bu önek ile adlandırılacaktır (part_1.html, part_2.html, ...)</div>
+                                    <div class="form-text">Bölünmüş dosyalar bu önek ile adlandırılacak (part_1.html, part_2.html...)</div>
                                 </div>
                             </div>
-                            
+
                             <div class="d-flex gap-2">
-                                <button type="button" id="btnPreview" class="btn btn-outline-primary">
-                                    <i class="fas fa-eye"></i> Önizleme
-                                </button>
-                                <button type="button" id="btnStart" class="btn btn-primary">
-                                    <i class="fas fa-play"></i> Başlat
-                                </button>
-                                <button type="button" id="btnCancel" class="btn btn-danger" disabled>
-                                    <i class="fas fa-stop"></i> İptal
-                                </button>
+                                <button type="button" id="btnPreview" class="btn btn-outline-primary"><i class="fas fa-eye"></i> Önizleme</button>
+                                <button type="button" id="btnStart" class="btn btn-primary"><i class="fas fa-play"></i> Başlat (ZIP oluştur)</button>
+                                <button type="button" id="btnCancel" class="btn btn-danger" disabled><i class="fas fa-stop"></i> İptal</button>
                             </div>
                         </form>
                     </div>
                 </div>
-                
+
                 <div class="card">
-                    <div class="card-header">
-                        <i class="fas fa-tasks feature-icon"></i> İşlem Sonuçları
-                    </div>
+                    <div class="card-header"><i class="fas fa-tasks"></i> İşlem Sonuçları</div>
                     <div class="card-body">
                         <div id="resultArea">
                             <p class="text-center text-muted">Henüz bir işlem yapılmadı. Önizleme veya bölme işlemi sonuçları burada görünecek.</p>
@@ -236,19 +105,18 @@
                     </div>
                 </div>
             </div>
-            
+
+            <!-- Sağ -->
             <div class="col-lg-6">
                 <div class="card">
-                    <div class="card-header">
-                        <i class="fas fa-chart-line feature-icon"></i> İlerleme Durumu
-                    </div>
+                    <div class="card-header"><i class="fas fa-chart-line"></i> İlerleme Durumu</div>
                     <div class="card-body">
                         <h6>İlerleme</h6>
                         <div class="progress mb-2">
                             <div id="progbar" class="progress-bar" style="width:0%">0%</div>
                         </div>
                         <div class="small text-muted mb-2" id="statusline">Hazır</div>
-                        
+
                         <div class="stats-box">
                             <div class="row">
                                 <div class="col-4">
@@ -265,29 +133,24 @@
                                 </div>
                             </div>
                         </div>
-                        
+
                         <h6 class="mt-3">İşlem Günlüğü</h6>
                         <pre class="log" id="logarea">HTML Splitter başlatıldı.
 Hazır...</pre>
                     </div>
                 </div>
-                
+
                 <div class="card">
-                    <div class="card-header">
-                        <i class="fas fa-info-circle feature-icon"></i> Nasıl Kullanılır?
-                    </div>
+                    <div class="card-header"><i class="fas fa-info-circle"></i> Nasıl Kullanılır?</div>
                     <div class="card-body">
                         <ol>
-                            <li>Bir HTML dosyası yükleyin veya içerik yapıştırın</li>
-                            <li>Bölme modunu ve maksimum değeri seçin</li>
-                            <li>Önizleme ile sonucu kontrol edin</li>
-                            <li>Bölme işlemini başlatın</li>
-                            <li>İşlem tamamlandığında parçaları indirin</li>
+                            <li>Bir HTML dosyası yükle veya içerik yapıştır</li>
+                            <li>Bölme modunu ve maksimum değeri seç</li>
+                            <li>Önizleme ile sonucu kontrol et</li>
+                            <li>Başlat ile parçalara böl ve ZIP indir</li>
                         </ol>
-                        
                         <div class="alert alert-info">
-                            <i class="fas fa-lightbulb"></i> <strong>İpucu:</strong> Büyük dosyaları işlemek tarayıcınızı yavaşlatabilir. 
-                            Dosya boyutu 5MB'tan büyükse dikkatli olun.
+                            <i class="fas fa-lightbulb"></i> <strong>Uyarı:</strong> Büyük dosyalar tarayıcı belleğini zorlayabilir. 5MB+ dikkatli ol.
                         </div>
                     </div>
                 </div>
@@ -295,8 +158,11 @@ Hazır...</pre>
         </div>
     </div>
 
+    <!-- JSZip CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+
     <script>
-        // DOM elemanlarını seçme
+        // Elementler
         const fileInput = document.getElementById('fileInput');
         const textInput = document.getElementById('textInput');
         const modeSelect = document.getElementById('modeSelect');
@@ -313,229 +179,88 @@ Hazır...</pre>
         const statParts = document.getElementById('stat-parts');
         const statWords = document.getElementById('stat-words');
         const statChars = document.getElementById('stat-chars');
-        
-        // Zamanı güncelleme
+
+        let currentOperation = null;     // "processing" | "zipping" | null
+        let cancelRequested = false;
+        let lastParts = [];              // son bölünmüş parçalar (önizleme / indirme için)
+
+        // Zaman
         function updateTime() {
             const now = new Date();
             document.getElementById('current-time').textContent = now.toLocaleTimeString();
         }
         setInterval(updateTime, 1000);
         updateTime();
-        
-        // Mod değiştiğinde etiketi güncelleme
+
+        // Mod değişimi
         modeSelect.addEventListener('change', function() {
             const mode = this.value;
-            if (mode === 'words') {
-                maxLabel.textContent = 'Maksimum Kelime';
-                maxValue.value = 1800;
-            } else if (mode === 'lines') {
-                maxLabel.textContent = 'Maksimum Satır';
-                maxValue.value = 100;
-            } else if (mode === 'chars') {
-                maxLabel.textContent = 'Maksimum Karakter';
-                maxValue.value = 5000;
-            }
+            if (mode === 'words') { maxLabel.textContent = 'Maksimum Kelime'; maxValue.value = 1800; }
+            else if (mode === 'lines') { maxLabel.textContent = 'Maksimum Satır'; maxValue.value = 100; }
+            else if (mode === 'chars') { maxLabel.textContent = 'Maksimum Karakter'; maxValue.value = 5000; }
         });
-        
-        // Log mesajı ekleme
+
         function appendLog(message) {
-            logarea.textContent += message + '\n';
+            const time = new Date().toLocaleTimeString();
+            logarea.textContent += `[${time}] ${message}\n`;
             logarea.scrollTop = logarea.scrollHeight;
         }
-        
-        // İlerleme çubuğunu güncelleme
-        function updateProgress(current, total) {
+
+        function updateProgress(current, total, extraText = '') {
             const percent = total > 0 ? Math.round((current / total) * 100) : 0;
             progbar.style.width = percent + '%';
             progbar.textContent = percent + '%';
-            statusline.textContent = `${current}/${total} parça işlendi`;
+            statusline.textContent = `${current}/${total} ${extraText}`.trim();
             statParts.textContent = total;
         }
-        
-        // İstatistikleri güncelleme
+
         function updateStats(content) {
-            const words = content.split(/\s+/).filter(word => word.length > 0).length;
+            const words = content.split(/\s+/).filter(w => w.length > 0).length;
             const chars = content.length;
             statWords.textContent = words.toLocaleString();
             statChars.textContent = chars.toLocaleString();
         }
-        
-        // Dosya yükleme
+
+        // File input
         fileInput.addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (!file) return;
-            
             const reader = new FileReader();
-            reader.onload = function(e) {
-                textInput.value = e.target.result;
-                updateStats(e.target.result);
+            reader.onload = function(ev) {
+                textInput.value = ev.target.result;
+                updateStats(ev.target.result);
                 appendLog(`"${file.name}" yüklendi.`);
             };
             reader.readAsText(file);
         });
-        
-        // Metin girişi değiştiğinde
+
         textInput.addEventListener('input', function() {
             updateStats(this.value);
         });
-        
+
         // Bölme fonksiyonu
-        function splitContent(content, mode, maxValue) {
+        function splitContent(content, mode, maxVal) {
             const parts = [];
-            
             if (mode === 'words') {
-                const words = content.split(/\s+/);
-                for (let i = 0; i < words.length; i += maxValue) {
-                    parts.push(words.slice(i, i + maxValue).join(' '));
+                // Kelimelere göre bölme; kelime sınırı çok yüksekse performans etkilenir — dikkat
+                const words = content.split(/\s+/).filter(w => w.length > 0);
+                for (let i = 0; i < words.length; i += maxVal) {
+                    parts.push(words.slice(i, i + maxVal).join(' '));
                 }
             } else if (mode === 'lines') {
-                const lines = content.split('\n');
-                for (let i = 0; i < lines.length; i += maxValue) {
-                    parts.push(lines.slice(i, i + maxValue).join('\n'));
+                const lines = content.split(/\r?\n/);
+                for (let i = 0; i < lines.length; i += maxVal) {
+                    parts.push(lines.slice(i, i + maxVal).join('\n'));
                 }
             } else if (mode === 'chars') {
-                for (let i = 0; i < content.length; i += maxValue) {
-                    parts.push(content.substring(i, i + maxValue));
+                for (let i = 0; i < content.length; i += maxVal) {
+                    parts.push(content.substring(i, i + maxVal));
                 }
             }
-            
             return parts;
         }
-        
-        // Önizleme butonu
-        btnPreview.addEventListener('click', function() {
-            const content = textInput.value.trim();
-            if (!content) {
-                appendLog('HATA: İşlenecek içerik yok.');
-                return;
-            }
-            
-            const mode = modeSelect.value;
-            const max = parseInt(maxValue.value);
-            
-            if (isNaN(max) || max <= 0) {
-                appendLog('HATA: Geçerli bir maksimum değer girin.');
-                return;
-            }
-            
-            appendLog(`Önizleme için bölme işlemi başlatılıyor: ${mode} modu, maksimum ${max}`);
-            
-            // Bölme işlemi
-            const parts = splitContent(content, mode, max);
-            
-            // Sonuçları göster
-            resultArea.innerHTML = `
-                <div class="alert alert-info">
-                    <strong>Önizleme:</strong> ${parts.length} parça oluşturulacak. İlk 3 parça aşağıda gösteriliyor.
-                </div>
-            `;
-            
-            // İlk 3 parçayı göster
-            for (let i = 0; i < Math.min(3, parts.length); i++) {
-                const partDiv = document.createElement('div');
-                partDiv.className = 'card mb-2';
-                partDiv.innerHTML = `
-                    <div class="card-body">
-                        <h6>${outputPrefix.value}_${i+1}.html <span class="badge bg-secondary">${parts[i].length} karakter</span></h6>
-                        <div class="preview-box">${escapeHtml(parts[i].substring(0, 200))}...</div>
-                    </div>
-                `;
-                resultArea.appendChild(partDiv);
-            }
-            
-            appendLog(`Önizleme tamamlandı: ${parts.length} parça oluşturulacak.`);
-            updateProgress(0, parts.length);
-        });
-        
-        // Başlat butonu
-        btnStart.addEventListener('click', function() {
-            const content = textInput.value.trim();
-            if (!content) {
-                appendLog('HATA: İşlenecek içerik yok.');
-                return;
-            }
-            
-            const mode = modeSelect.value;
-            const max = parseInt(maxValue.value);
-            
-            if (isNaN(max) || max <= 0) {
-                appendLog('HATA: Geçerli bir maksimum değer girin.');
-                return;
-            }
-            
-            appendLog(`Bölme işlemi başlatılıyor: ${mode} modu, maksimum ${max}`);
-            btnStart.disabled = true;
-            btnCancel.disabled = false;
-            
-            // Bölme işlemi
-            const parts = splitContent(content, mode, max);
-            updateProgress(0, parts.length);
-            
-            // İşlemi simüle et (gerçek uygulamada burada dosya yazma işlemleri yapılır)
-            let current = 0;
-            const processNext = () => {
-                if (current >= parts.length) {
-                    // İşlem tamamlandı
-                    appendLog('Bölme işlemi tamamlandı!');
-                    
-                    // ZIP indirme linkini oluştur
-                    const zipLink = document.createElement('a');
-                    zipLink.href = '#'; // Gerçek uygulamada burada ZIP dosyası oluşturulur
-                    zipLink.className = 'btn btn-success me-2';
-                    zipLink.innerHTML = '<i class="fas fa-download"></i> Tüm Parçaları İndir (ZIP)';
-                    zipLink.onclick = function(e) {
-                        e.preventDefault();
-                        appendLog('NOT: Bu demo sürümünde indirme işlevi simüle edilmiştir.');
-                    };
-                    
-                    // Tekil dosya indirme linkleri
-                    const fileLinks = document.createElement('div');
-                    fileLinks.className = 'mt-3';
-                    fileLinks.innerHTML = '<h6>Tekil Dosyalar:</h6>';
-                    
-                    for (let i = 0; i < Math.min(5, parts.length); i++) {
-                        const link = document.createElement('a');
-                        link.href = 'data:text/html;charset=utf-8,' + encodeURIComponent(parts[i]);
-                        link.download = `${outputPrefix.value}_${i+1}.html`;
-                        link.className = 'btn btn-outline-primary btn-sm me-2 mb-2';
-                        link.textContent = `${outputPrefix.value}_${i+1}.html`;
-                        fileLinks.appendChild(link);
-                    }
-                    
-                    resultArea.innerHTML = `
-                        <div class="alert alert-success">
-                            <strong>İşlem Tamamlandı!</strong> ${parts.length} parça oluşturuldu.
-                        </div>
-                    `;
-                    resultArea.appendChild(zipLink);
-                    resultArea.appendChild(fileLinks);
-                    
-                    btnStart.disabled = false;
-                    btnCancel.disabled = true;
-                    return;
-                }
-                
-                // İşlemi devam ettir
-                updateProgress(current + 1, parts.length);
-                appendLog(`${outputPrefix.value}_${current+1}.html oluşturuldu (${parts[current].length} karakter)`);
-                current++;
-                
-                // Sonraki işlem için zamanlama (simülasyon için)
-                setTimeout(processNext, 100);
-            };
-            
-            // İşlemi başlat
-            processNext();
-        });
-        
-        // İptal butonu
-        btnCancel.addEventListener('click', function() {
-            appendLog('İşlem kullanıcı tarafından iptal edildi.');
-            btnStart.disabled = false;
-            btnCancel.disabled = true;
-        });
-        
-        // HTML escape fonksiyonu
+
+        // HTML escape (önizleme için)
         function escapeHtml(unsafe) {
             return unsafe
                 .replace(/&/g, "&amp;")
@@ -544,8 +269,168 @@ Hazır...</pre>
                 .replace(/"/g, "&quot;")
                 .replace(/'/g, "&#039;");
         }
-        
-        // Demo içerik yükleme
+
+        // Önizleme
+        btnPreview.addEventListener('click', function() {
+            const content = textInput.value;
+            if (!content || content.trim().length === 0) {
+                appendLog('HATA: İşlenecek içerik yok.');
+                return;
+            }
+            const mode = modeSelect.value;
+            const max = parseInt(maxValue.value, 10);
+            if (isNaN(max) || max <= 0) { appendLog('HATA: Geçerli bir maksimum değer girin.'); return; }
+
+            appendLog(`Önizleme: ${mode} modu, maksimum ${max}`);
+            const parts = splitContent(content, mode, max);
+            lastParts = parts.slice(); // sakla
+            resultArea.innerHTML = `
+                <div class="alert alert-info"><strong>Önizleme:</strong> ${parts.length} parça oluşturulacak. İlk 3 parça aşağıda gösteriliyor.</div>
+            `;
+            for (let i = 0; i < Math.min(3, parts.length); i++) {
+                const partDiv = document.createElement('div');
+                partDiv.className = 'card mb-2';
+                partDiv.innerHTML = `
+                    <div class="card-body">
+                        <h6>${escapeHtml(outputPrefix.value)}_${i+1}.html <span class="badge bg-secondary">${parts[i].length} karakter</span></h6>
+                        <div class="preview-box">${escapeHtml(parts[i].substring(0, 200))}...</div>
+                    </div>
+                `;
+                resultArea.appendChild(partDiv);
+            }
+            appendLog(`Önizleme tamamlandı: ${parts.length} parça.`);
+            updateProgress(0, parts.length);
+        });
+
+        // Başlat - gerçek ZIP oluşturma
+        btnStart.addEventListener('click', async function() {
+            if (currentOperation) {
+                appendLog('Zaten bir işlem devam ediyor. İptal edebilir veya bitmesini bekleyebilirsin.');
+                return;
+            }
+
+            const content = textInput.value;
+            if (!content || content.trim().length === 0) { appendLog('HATA: İşlenecek içerik yok.'); return; }
+            const mode = modeSelect.value;
+            const max = parseInt(maxValue.value, 10);
+            if (isNaN(max) || max <= 0) { appendLog('HATA: Geçerli bir maksimum değer girin.'); return; }
+
+            appendLog(`Bölme + ZIP işlemi başlatılıyor: ${mode} modu, maksimum ${max}`);
+            btnStart.disabled = true;
+            btnCancel.disabled = false;
+            cancelRequested = false;
+            currentOperation = "processing";
+
+            try {
+                // 1) Böl
+                const parts = splitContent(content, mode, max);
+                lastParts = parts.slice();
+                updateProgress(0, parts.length, 'parça oluşturuluyor');
+                appendLog(`${parts.length} parça oluşturuldu. ZIP içine ekleniyor...`);
+                if (parts.length === 0) {
+                    appendLog('HATA: Parça oluşturulamadı.');
+                    throw new Error('No parts');
+                }
+
+                // iptal kontrolü
+                if (cancelRequested) throw new Error('Kullanıcı iptal etti.');
+
+                // 2) JSZip ile ZIP oluştur
+                currentOperation = "zipping";
+                const zip = new JSZip();
+
+                // Klasör içine koy (isteğe bağlı)
+                const folderName = outputPrefix.value || 'parts';
+                const folder = zip.folder(folderName);
+
+                // Add files
+                for (let i = 0; i < parts.length; i++) {
+                    if (cancelRequested) {
+                        appendLog('İşlem iptal edildi (parçalar ZIP e eklenirken).');
+                        throw new Error('Kullanıcı iptal etti.');
+                    }
+                    const filename = `${outputPrefix.value || 'part'}_${i+1}.html`;
+                    folder.file(filename, parts[i]);
+                    // güncelle prog (dosya ekleme)
+                    updateProgress(i + 1, parts.length, 'parçalar eklendi');
+                    appendLog(`${filename} hazırlandı (${parts[i].length} karakter)`);
+                    // event loop'a nefes ver (çok büyük işlerde tarayıcı kitlenmesin)
+                    await new Promise(res => setTimeout(res, 0));
+                }
+
+                // ZIP oluşturma aşaması: generateAsync ile ilerleme bildirimi alıyoruz
+                appendLog('ZIP oluşturuluyor (sıkıştırma)... Bu işlem dosya boyutuna göre birkaç saniye sürebilir.');
+                updateProgress(0, 100, 'ZIP oluşturuluyor');
+
+                const blob = await zip.generateAsync({ type: "blob" }, metadata => {
+                    // metadata.percent -> yüzde olarak ilerleme
+                    if (cancelRequested) {
+                        // Not: JSZip generateAsync içinde doğrudan iptal mekanizması yok,
+                        // bu durumda sonucu yok sayacağız. Burada sadece UI güncellemesi yap.
+                    }
+                    const pct = Math.round(metadata.percent);
+                    progbar.style.width = pct + '%';
+                    progbar.textContent = pct + '%';
+                    statusline.textContent = `ZIP oluşturuluyor: ${pct}%`;
+                });
+
+                if (cancelRequested) {
+                    appendLog('İşlem iptal edildi (ZIP oluşturulurken). Oluşan veri siliniyor.');
+                    currentOperation = null;
+                    btnStart.disabled = false;
+                    btnCancel.disabled = true;
+                    updateProgress(0, lastParts.length);
+                    return;
+                }
+
+                // 3) İndir
+                const zipName = `${outputPrefix.value || 'parts'}.zip`;
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = zipName;
+                document.body.appendChild(a);
+                a.click();
+                setTimeout(() => {
+                    URL.revokeObjectURL(url);
+                    a.remove();
+                }, 2000);
+
+                appendLog(`ZIP hazır: ${zipName} (indiriliyor...)`);
+                resultArea.innerHTML = `
+                    <div class="alert alert-success"><strong>İşlem Tamamlandı!</strong> ${lastParts.length} parça ZIP içine kondu. İndirme başladı.</div>
+                `;
+
+                updateProgress(lastParts.length, lastParts.length, 'tamamlandı');
+            } catch (err) {
+                if (err && err.message !== 'Kullanıcı iptal etti.') {
+                    appendLog('HATA: ' + (err.message || err));
+                    console.error(err);
+                } else {
+                    appendLog('İşlem kullanıcı tarafından iptal edildi.');
+                }
+            } finally {
+                currentOperation = null;
+                cancelRequested = false;
+                btnStart.disabled = false;
+                btnCancel.disabled = true;
+            }
+        });
+
+        // İptal
+        btnCancel.addEventListener('click', function() {
+            if (!currentOperation) {
+                appendLog('İptal edilecek aktif bir işlem yok.');
+                btnCancel.disabled = true;
+                return;
+            }
+            appendLog('Kullanıcı iptali talep etti. İşlem durdurulacak...');
+            cancelRequested = true;
+            // Butonu pasifleştirme (bekle)
+            btnCancel.disabled = true;
+        });
+
+        // Demo içerik
         document.addEventListener('DOMContentLoaded', function() {
             const demoContent = `<!DOCTYPE html>
 <html>
@@ -556,18 +441,9 @@ Hazır...</pre>
 <body>
     <h1>HTML Splitter Demo İçeriği</h1>
     <p>Bu, HTML Splitter uygulamasının demo içeriğidir. Bu metin, uygulamanın nasıl çalıştığını test etmek için kullanılabilir.</p>
-    <p>HTML bölme işlemi, büyük HTML belgelerini daha küçük parçalara bölmek için kullanışlıdır. Bu, içerik yönetim sistemlerinde, e-öğrenme platformlarında veya büyük belgeleri yönetmek için faydalı olabilir.</p>
-    <h2>Özellikler</h2>
-    <ul>
-        <li>Kelime, satır veya karakter sayısına göre bölme</li>
-        <li>Önizleme özelliği ile sonucu görme</li>
-        <li>Kolay indirme seçenekleri</li>
-        <li>Kullanıcı dostu arayüz</li>
-    </ul>
-    <p>Uygulama tamamen tarayıcınızda çalışır, hiçbir sunucuya veri gönderilmez.</p>
+    <p>HTML bölme işlemi, büyük HTML belgelerini daha küçük parçalara bölmek için kullanışlıdır.</p>
 </body>
 </html>`;
-            
             textInput.value = demoContent;
             updateStats(demoContent);
             appendLog('Demo içerik yüklendi. Önizleme veya bölme işlemi yapabilirsiniz.');
