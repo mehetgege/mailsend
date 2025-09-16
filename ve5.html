@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="tr" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <title>zifir Nihai Sürüm (Gerçek Veri)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <!-- Hafif grafik için Lightweight Charts -->
+  <script src="https://cdn.jsdelivr.net/npm/lightweight-charts@4.1.0/dist/lightweight-charts.standalone.production.js"></script>
+  <style>
+    :root{
+      --bg:#0b111a; --panel:#151b22; --panel-soft:#1b232d; --text:#c9d1d9; --muted:#8b949e; --border:#30363d;
+      --primary:#58a6ff; --positive:#2ecc71; --negative:#e74c3c; --neutral:#f1c40f; --shadow:0 8px 32px rgba(0,0,0,.35);
+      --glow:0 0 16px rgba(88,166,255,.45); --bg-soft:linear-gradient(135deg, rgba(59,130,246,.08), rgba(139,92,246,.08), rgba(16,185,129,.08));
+    }
+    [data-theme="light"]{ --bg:#f6f8fa; --panel:#fff; --panel-soft:#f2f5f9; --text:#24292f; --muted:#667085; --border:#d0d7de; --primary:#0969da; }
+    [data-theme="war"]{ --bg:#1b0000; --panel:#2a0000; --panel-soft:#3a0000; --text:#ffd2d2; --muted:#ffbbbb; --border:#8B0000; --primary:#ffc107; --positive:#ffc107; --negative:#ff4d4d; --neutral:#ffdd57; }
+
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, 'Roboto Mono', monospace;background:var(--bg);color:var(--text);}
+
+    /* Üst çubuk */
+    header.topbar{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:var(--panel);border:1px solid var(--border);border-radius:8px;margin:10px;box-shadow:var(--shadow)}
+    .brand{display:flex;align-items:center;gap:10px;font-weight:800}
+    .dot{width:12px;height:12px;border-radius:50%;background:var(--primary);box-shadow:var(--glow)}
+    .actions{display:flex;gap:8px;align-items:center}
+    .icon-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 12px;border:1px solid var(--border);border-radius:8px;background:#1c2432;color:#fff;cursor:pointer;font-size:12px}
+    .icon-btn:hover{background:#202a3a}
+    input,select{border:1px solid var(--border);border-radius:6px;padding:6px 8px;background:#0f1622;color:var(--text)}
+    .badge{font-size:11px;padding:4px 8px;border-radius:6px;border:1px solid var(--border);background:rgba(255,255,255,.05)}
+
+    /* İki satır layout: üstte kısa kontrol, altta ana grid */
+    .wrap{display:grid;grid-template-rows:auto 1fr;gap:10px;height:calc(100vh - 20px);margin:0 10px 10px}
+    .grid{display:grid;grid-template-columns: 1.2fr .8fr;grid-template-rows: 1fr;gap:10px;height:100%}
+    @media (max-width:1100px){ .grid{grid-template-columns:1fr;grid-template-rows:1fr auto} }
+
+    /* Paneller */
+    .panel{background:var(--panel);border:1px solid var(--border);border-radius:8px;box-shadow:var(--shadow);display:flex;flex-direction:column;min-height:0}
+    .panel-title{padding:8px 10px;border-bottom:1px solid var(--border);color:var(--primary);font-weight:800;display:flex;justify-content:space-between;align-items:center}
+    .panel-body{padding:8px;min-height:0;overflow:auto}
+
+    /* Grafik ve heatmap alanı */
+    #chart-container{position:relative;min-height:240px;flex:1}
+    #live-chart{width:100%;height:100%}
+    .chart-controls{position:absolute;top:8px;right:8px;display:flex;gap:6px;z-index:10}
+    .mini{padding:4px 8px;border-radius:6px;border:1px solid var(--border);background:#131b28;color:#fff;font-size:12px}
+    #chart-countdown{position:absolute;left:8px;top:8px;padding:4px 6px;border-radius:6px;background:rgba(0,0,0,.45);color:var(--primary);font-weight:700}
+
+    /* Heatmap */
+    #heatmap{width:100%;height:240px;border:1px solid var(--border);border-radius:6px;background:#0a0f15}
+
+    /* Ticker ve signal bar */
+    .ticker{display:flex;align-items:center;gap:10px;padding:6px 8px;border:1px solid var(--border);border-radius:8px;background:var(--panel)}
+    .symbol{font-weight:800;color:var(--primary)}
+    .price{font-weight:800}
+    .sigbars{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+    .sigbar{display:flex;flex-direction:column;gap:4px}
+    .bar{height:10px;background:var(--panel-soft);border:1px solid var(--border);border-radius:6px;overflow:hidden}
+    .fill{height:100%;width:0;background:linear-gradient(90deg,rgba(0,0,0,0),var(--positive));transition:width .2s}
+    .fill.sell{background:linear-gradient(90deg,rgba(0,0,0,0),var(--negative))}
+
+    /* Immune Knights grid */
+    #immortals{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:8px}
+    .knight{display:flex;align-items:center;gap:8px;border:1px solid var(--border);border-radius:6px;background:rgba(255,255,255,.04);padding:8px}
+    .kdot{width:10px;height:10px;border-radius:50%}
+
+    /* Notifications */
+    #toasts{position:fixed;left:10px;bottom:10px;display:flex;flex-direction:column;gap:8px;z-index:9999}
+    .toast{border:1px solid var(--border);border-left:4px solid var(--primary);background:rgba(25,30,40,.92);backdrop-filter:blur(4px);color:#fff;padding:8px 12px;border-radius:6px;font-size:12px;min-width:260px}
+    .toast.success{border-left-color:var(--positive)}
+    .toast.warning{border-left-color:var(--neutral)}
+    .toast.danger{border-left-color:var(--negative)}
+
+    /* Logs */
+    #logs{height:160px;border:1px solid var(--border);border-radius:6px;background:#0a0f15;color:#cfe3ff;font-size:12px;overflow:auto;padding:8px}
+
+    /* Honor list */
+    #honor{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px}
+
+    /* Buttons */
+    .btn{padding:8px 12px;border:1px solid var(--border);border-radius:8px;background:#1c2432;color:#fff;cursor:pointer}
+    .btn:hover{background:#202a3a}
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand"><span class="dot"></span><span>ULTIMATE TRADING KOMUTA MERKEZİ — Nihai</span></div>
+    <div class="actions">
+      <input id="symbol-input" value="BTCUSDT" title="Sembol" />
+      <select id="tf-select" title="Zaman Dilimi">
+        <option value="1m">1m</option><option value="5m" selected>5m</option><option value="15m">15m</option><option value="1h">1h</option><option value="4h">4h</option>
+      </select>
+      <button id="theme-btn" class="icon-btn">Tema</button>
+      <button id="start-btn" class="icon-btn">Başlat</button>
+      <button id="stop-btn" class="icon-btn" disabled>Durdur</button>
+    </div>
+  </header>
+
+  <div class="wrap">
+    <!-- Üst kısa panel: Ticker ve sinyal barlar -->
+    <div class="panel" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:8px">
+      <div class="ticker">
+        <div class="symbol" id="tk-symbol">BTC/USDT</div>
+        <div class="price" id="tk-price">-</div>
+        <div class="badge" id="tk-change">0.00%</div>
+        <div class="badge" id="tk-vol">Vol: -</div>
+      </div>
+      <div class="sigbars">
+        <div class="sigbar">
+          <div class="badge">AL Gücü</div>
+          <div class="bar"><div class="fill" id="buy-fill"></div></div>
+          <div id="buy-score" class="badge">0.0</div>
+        </div>
+        <div class="sigbar">
+          <div class="badge">SAT Gücü</div>
+          <div class="bar"><div class="fill sell" id="sell-fill"></div></div>
+          <div id="sell-score" class="badge">0.0</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid">
+      <!-- Sol: Grafi̇k ve Heatmap -->
+      <div class="panel" style="display:grid;grid-template-rows:1fr auto;gap:10px">
+        <div class="panel">
+          <div class="panel-title">
+            Canlı Grafik
+            <div class="badge" id="cd-count">--:--</div>
+          </div>
+          <div class="panel-body" id="chart-container">
+            <div id="live-chart"></div>
+            <div class="chart-controls">
+              <button class="mini" id="zoom-in">+</button>
+              <button class="mini" id="zoom-out">-</button>
+              <button class="mini" id="zoom-reset">Sıfırla</button>
+            </div>
+            <div id="chart-countdown"></div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-title">Emir Defteri Isı Haritası</div>
+          <div class="panel-body"><canvas id="heatmap"></canvas></div>
+        </div>
+      </div>
+
+      <!-- Sağ: Immune Knights + Divine + Logs + Honor -->
+      <div class="panel" style="display:grid;grid-template-rows:auto auto 1fr auto;gap:10px">
+        <div class="panel">
+          <div class="panel-title">Immune Knights (7 Cüce) + 9 Tanrı</div>
+          <div class="panel-body" id="immortals"></div>
+        </div>
+        <div class="panel">
+          <div class="panel-title">Divine Blessings + Primordial Soup</div>
+          <div class="panel-body" style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+            <div>
+              <div class="badge">Divine List</div>
+              <div id="divine-list" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:6px;margin-top:6px"></div>
+            </div>
+            <div>
+              <div class="badge">Kontrol</div>
+              <div style="display:flex;gap:6px;margin-top:6px">
+                <button id="bless-btn" class="btn">Lütuf Ver</button>
+                <button id="curse-btn" class="btn">Lanet</button>
+              </div>
+              <div style="margin-top:8px" class="badge" id="soup-status">Primordial Soup: Enerji 100%</div>
+            </div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-title">Geliştirici Logları</div>
+          <div class="panel-body" id="logs"></div>
+        </div>
+        <div class="panel">
+          <div class="panel-title">Şeref Tablosu</div>
+          <div class="panel-body" id="honor"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="toasts"></div>
+
+  <script>
+    /**********************
+     * Yardımcı Fonksiyonlar
+     **********************/
+    const $ = (id)=>document.getElementById(id);
+    const fmt = (n, d=2)=> (isFinite(n) ? Number(n).toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d}) : '-');
+    const toast = (msg,type='info',timeout=4000)=>{
+      const c=$('toasts'); if(!c)return; const div=document.createElement('div'); div.className=`toast ${type}`; div.textContent=msg; c.appendChild(div); setTimeout(()=>div.remove(),timeout);
+    };
+    const clamp=(v,min,max)=>Math.max(min,Math.min(max,v));
+    const now=()=>Date.now();
+
+    /**********************
+     * Event Bus
+     **********************/
+    class EventBus{
+      constructor(){this.map={};}
+      on(t,cb){(this.map[t]||(this.map[t]=[])).push(cb);}
+      off(t,cb){this.map[t]=(this.map[t]||[]).filter(f=>f!==cb);}
+      emit(t,p){(this.map[t]||[]).forEach(f=>{try{f(p);}catch(e){console.error('bus error',e)}});}
+    }
+    const Bus=new EventBus();
+
+    /**********************
+     * Çalışma Durumu
+     **********************/
+    const State={
+      running:false,
+      symbol:'BTCUSDT',
+      timeframe:'5m',
+      price:0, change24h:0, vol24h:0,
+      candles:[],
+      orderbook:{bids:[],asks:[]},
+      indicators:{rsi:[],atr:null,bbands:null,vwap:null,adx:null},
+      signals:[],
+      pendingSignals:[],
+      stats:{total:0,tp:0,sl:0},
+      scoreBuy:0, scoreSell:0,
+      lastKlineOpen:0,
+      theme:localStorage.getItem('theme')||'dark',
+      strengthBoosts:{}, // strategy-based boosts (Divine/Immune etkisi)
+    };
+
+    /**********************
+     * 16 Worker (Blob) — Tanrılar
+     **********************/
+    const GODS=Array.from({length:16}).map((_,i)=>({
+      id:i, name:`God-${i+1}`,
+      color:['#4F6DFF','#2E8B57','#FFD700','#4B5563','#1E90FF','#A020F0','#C0C0C0','#4ADE80','#60A5FA','#F472B6','#10B981','#34D399','#64748B','#F59E0B','#8B5CF6','#22C55E'][i%16],
+      power:0.05+Math.random()*0.25, desc:'Divine Node'
+    }));
+    const workers=[];
+    const makeWorker=(god,idx)=>{
+      const code=`
+        let god=${JSON.stringify(god)}; let idx=${idx};
+        self.onmessage=(e)=>{
+          const d=e.data; if(!d)return;
+          if(d.type==='bless'){ const amt=d.amount||0.03; god.power=Math.min(1,(god.power||0)+amt); postMessage({type:'bless',idx,god}); }
+          else if(d.type==='curse'){ const amt=d.amount||0.02; god.power=Math.max(0,(god.power||0)-amt); postMessage({type:'curse',idx,god}); }
+          else if(d.type==='query'){ postMessage({type:'query',idx,god}); }
+        };
+      `;
+      const w=new Worker(URL.createObjectURL(new Blob([code],{type:'application/javascript'})));
+      w.onmessage=(ev)=>{
+        const d=ev.data;
+        if(d?.god){ GODS[d.idx].power=d.god.power; renderImmortals(); }
+      };
+      return w;
+    };
+    const blessGod=(i,amt=0.02)=>workers[i]?.postMessage({type:'bless',amount:amt});
+    const curseGod=(i,amt=0.02)=>workers[i]?.postMessage({type:'curse',amount:amt});
+    const queryGod=(i)=>workers[i]?.postMessage({type:'query'});
+
+    /**********************
+     * Immune Knights (7 Cüce)
+     **********************/
+    const KNIGHTS=[
+      {name:'Doc',color:'#4F6DFF',desc:'Bilgelik & Güvenlik',influence:{defensive:0.14,trend:0.06,meanRev:0.06}},
+      {name:'Grumpy',color:'#8B0000',desc:'Risk Kısıcı',influence:{defensive:0.10,trend:0.04,aggressive:0.06}},
+      {name:'Happy',color:'#FFD700',desc:'Fırsatçı',influence:{aggressive:0.10,trend:0.06,meanRev:0.06}},
+      {name:'Sleepy',color:'#87CEFA',desc:'Stabilite',influence:{defensive:0.12,meanRev:0.04}},
+      {name:'Bashful',color:'#FF69B4',desc:'Uyum/Adaptasyon',influence:{trend:0.08,defensive:0.04,meanRev:0.05}},
+      {name:'Sneezy',color:'#7D7D7D',desc:'Koruma',influence:{defensive:0.10,risk:0.06}},
+      {name:'Dopey',color:'#A0522D',desc:'İnovasyon',influence:{explore:0.08,aggressive:0.05}}
+    ];
+    const KnightEnergy=KNIGHTS.map(()=>1.0);
+    const boostFromGods=()=> GODS.reduce((a,g)=>a+g.power,0)/GODS.length; // 0..1 arası yaklaşık
+    const getKnightInfluence=()=>{
+      // 7 cücenin etkisi + tanrılardan gelen ortalama güç
+      const gboost = boostFromGods()*0.5; // tanrı etkisini %50 çarpan
+      const m = {defensive:0,trend:0,meanRev:0,aggressive:0,explore:0,risk:0};
+      KNIGHTS.forEach((k,idx)=>{
+        const e=KnightEnergy[idx];
+        Object.keys(k.influence).forEach(key=>{
+          m[key]=(m[key]||0) + k.influence[key]*e;
+        });
+      });
+      Object.keys(m).forEach(k=>m[k]+=gboost*0.1);
+      return m; // object with categories
+    };
+
+    /**********************
+     * Divine Blessings + Primordial Soup
+     **********************/
+    const DIVINES=[
+      {name:'Aether',color:'#7C3AED',power:0.25,desc:'Yaratım Gücü'},
+      {name:'Gaia',color:'#2E8B57',power:0.20,desc:'Denge'},
+      {name:'Helios',color:'#FFD700',power:0.18,desc:'Güneş'},
+      {name:'Nyx',color:'#4B5563',power:0.15,desc:'Gece'},
+      {name:'Eos',color:'#1E90FF',power:0.12,desc:'Şafak'},
+      {name:'Astraeus',color:'#A020F0',power:0.10,desc:'Ritim'},
+      {name:'Selene',color:'#C0C0C0',power:0.08,desc:'Ay Işığı'}
+    ];
+    const blessDivine=(i,amt=0.02)=>{ DIVINES[i].power=clamp(DIVINES[i].power+amt,0,1); renderDivine(); };
+    const curseDivine=(i,amt=0.02)=>{ DIVINES[i].power=clamp(DIVINES[i].power-amt,0,1); renderDivine(); };
+    const divineWeightBoost=()=> DIVINES.reduce((s,d)=>s+d.power,0)/DIVINES.length; // 0..1
+
+    /**********************
+     * UI Renderers
+     **********************/
+    function renderTicker(){
+      $('tk-symbol').textContent = State.symbol.replace('USDT','/USDT');
+      $('tk-price').textContent = fmt(State.price, State.price>1000?2: (State.price>1?3:4));
+      const ch = State.change24h||0;
+      $('tk-change').textContent = `${fmt(ch,2)}%`;
+      $('tk-change').style.color = ch>=0? 'var(--positive)':'var(--negative)';
+      $('tk-vol').textContent = `Vol: ${fmt(State.vol24h,0)}`;
+    }
+    function renderSigBars(){
+      $('buy-score').textContent = State.scoreBuy.toFixed(1);
+      $('sell-score').textContent = State.scoreSell.toFixed(1);
+      $('buy-fill').style.width = `${clamp(State.scoreBuy*10,0,100)}%`;
+      $('sell-fill').style.width = `${clamp(State.scoreSell*10,0,100)}%`;
+    }
+    function renderImmortals(){
+      const cont=$('immortals'); if(!cont)return;
+      const knightsHTML=KNIGHTS.map((k,idx)=>`
+        <div class="knight">
+          <span class="kdot" style="background:${k.color}"></span>
+          <div>
+            <div><b>${k.name}</b> — ${k.desc}</div>
+            <div style="font-size:11px;color:var(--muted)">Enerji ${KnightEnergy[idx].toFixed(2)}</div>
+          </div>
+        </div>
+      `).join('');
+      const godsHTML=GODS.map(g=>`
+        <div class="knight">
+          <span class="kdot" style="background:${g.color}"></span>
+          <div>
+            <div><b>${g.name}</b> — ${g.desc||'Tanrı'}</div>
+            <div style="font-size:11px;color:var(--muted)">Güç ${Math.round(g.power*100)}%</div>
+          </div>
+        </div>
+      `).join('');
+      cont.innerHTML = knightsHTML + godsHTML;
+    }
+    function renderDivine(){
+      const box=$('divine-list'); if(!box) return;
+      box.innerHTML = DIVINES.map((d,i)=>`
+        <div class="knight" title="${d.name}">
+          <span class="kdot" style="background:${d.color}"></span>
+          <div><b>${d.name}</b><div style="font-size:11px;color:var(--muted)">Güç ${Math.round(d.power*100)}%</div></div>
+        </div>
+      `).join('');
+    }
+    function renderHonor(){
+      const box=$('honor'); if(!box) return;
+      // basit onurlandırma: en yüksek güçlü 3 tanrı ve en yüksek enerjili 3 cüce
+      const topGods=[...GODS].sort((a,b)=>b.power-a.power).slice(0,3);
+      const topKnights=KNIGHTS.map((k,i)=>({name:k.name,energy:KnightEnergy[i],color:k.color,desc:k.desc})).sort((a,b)=>b.energy-a.energy).slice(0,3);
+      box.innerHTML = `
+        ${topGods.map(g=>`<div class="knight"><span class="kdot" style="background:${g.color}"></span><div><b>${g.name}</b><div style="font-size:11px;color:var(--muted)">Güç ${Math.round(g.power*100)}%</div></div></div>`).join('')}
+        ${topKnights.map(k=>`<div class="knight"><span class="kdot" style="background:${k.color}"></span><div><b>${k.name}</b><div style="font-size:11px;color:var(--muted)">Enerji ${k.energy.toFixed(2)}</div></div></div>`).join('')}
+      `;
+    }
+
+    /**********************
+     * Chart Manager
+     **********************/
+    const ChartMan={
+      chart:null, series:{}, ready:false,
+      init(containerId='live-chart'){
+        const el=$(containerId); if(!el) return;
+        this.chart=LightweightCharts.createChart(el,{ width:el.clientWidth,height:el.clientHeight,layout:{background:{type:'solid',color:'transparent'},textColor:getComputedStyle(document.documentElement).getPropertyValue('--text')||'#c9d1d9',fontSize:11,fontFamily:'ui-monospace'},grid:{vertLines:{color:getComputedStyle(document.documentElement).getPropertyValue('--border')||'#30363d'},horzLines:{color:getComputedStyle(document.documentElement).getPropertyValue('--border')||'#30363d'}},timeScale:{timeVisible:true,secondsVisible:false,rightOffset:10,borderColor:getComputedStyle(document.documentElement).getPropertyValue('--border')||'#30363d'}})
+        this.series.candle=this.chart.addCandlestickSeries({upColor:getComputedStyle(document.documentElement).getPropertyValue('--positive')||'#2ecc71',downColor:getComputedStyle(document.documentElement).getPropertyValue('--negative')||'#e74c3c',borderVisible:false,wickUpColor:getComputedStyle(document.documentElement).getPropertyValue('--positive')||'#2ecc71',wickDownColor:getComputedStyle(document.documentElement).getPropertyValue('--negative')||'#e74c3c',priceFormat:{type:'price',precision:6,minMove:0.000001}});
+        this.series.vol=this.chart.addHistogramSeries({priceFormat:{type:'volume'},priceScaleId:'',scaleMargins:{top:0.8,bottom:0}});
+        window.addEventListener('resize',()=>{if(this.chart){this.chart.applyOptions({width:el.clientWidth,height:el.clientHeight});}});
+        this.ready=true;
+      },
+      setData(candles){
+        if(!this.ready) return;
+        const cs=candles.map(c=>({time:Math.floor(c.time/1000),open:c.open,high:c.high,low:c.low,close:c.close}));
+        const vs=candles.map(c=>({time:Math.floor(c.time/1000),value:c.volume,color:c.close>=c.open? 'rgba(46, 204, 113,.5)':'rgba(231, 76, 60,.5)'}));
+        this.series.candle.setData(cs); this.series.vol.setData(vs);
+      },
+      update(kline){
+        if(!this.ready) return;
+        const candle={time:Math.floor(kline.t/1000),open:+kline.o,high:+kline.h,low:+kline.l,close:+kline.c};
+        const vol={time:Math.floor(kline.t/1000),value:+kline.v,color:candle.close>=candle.open? 'rgba(46, 204, 113,.5)':'rgba(231, 76, 60,.5)'};
+        this.series.candle.update(candle); this.series.vol.update(vol);
+      },
+      zoom(f){ if(!this.chart)return; const ts=this.chart.timeScale(); const lr=ts.getVisibleLogicalRange(); if(!lr)return; const nf=lr.from*f, nt=lr.to*f; ts.setVisibleLogicalRange({from:nf,to:nt}); },
+      fit(){ if(this.chart) this.chart.timeScale().fitContent(); }
+    };
+
+    /**********************
+     * Heatmap Manager
+     **********************/
+    const Heatmap={
+      el:null,ctx:null,init(id='heatmap'){ this.el=$(id); if(!this.el) return; this.ctx=this.el.getContext('2d'); window.addEventListener('resize',()=>this.resize()); this.resize(); },
+      resize(){ if(!this.el)return; const p=this.el.parentElement; if(!p)return; this.el.width=p.clientWidth; this.el.height=240; },
+      draw(ob,price){ if(!this.ctx) return; const ctx=this.ctx; const w=this.el.width,h=this.el.height; ctx.clearRect(0,0,w,h); const asks=[...(ob.asks||[])].reverse(),bids=(ob.bids||[]); const all=[...asks,...bids]; const max=all.length? Math.max(...all.map(l=>l[1])):1; const draw=(levels,top,color)=>{ const hh=h/2; const ph=levels.length? hh/levels.length:hh; levels.forEach((lv,i)=>{ const q=lv[1],intensity=Math.min(Math.sqrt(q/max),1); ctx.fillStyle=color(intensity); const y=top? i*ph:(hh+i*ph); const bw=w*intensity; ctx.fillRect(0,y,bw,ph-1); }); }; const askColor=(t)=>`rgba(220,53,69,${0.15+0.5*t})`; const bidColor=(t)=>`rgba(46,204,113,${0.15+0.5*t})`; draw(asks,true,askColor); draw(bids,false,bidColor); }
+    };
+
+    /**********************
+     * Göstergeler
+     **********************/
+    function calcRSI(closes,period=14){
+      if(closes.length<period+1) return [];
+      let gains=0,loss=0; for(let i=1;i<=period;i++){ const d=closes[i]-closes[i-1]; if(d>0) gains+=d; else loss-=d; }
+      let avgG=gains/period, avgL=loss/period; const out=[]; out.push( 100 - 100/(1+(avgG/(avgL||1e-8))) );
+      for(let i=period+1;i<closes.length;i++){ const d=closes[i]-closes[i-1]; const g=d>0?d:0, l=d<0?-d:0; avgG=(avgG*(period-1)+g)/period; avgL=(avgL*(period-1)+l)/period; out.push( 100 - 100/(1+(avgG/(avgL||1e-8))) ); }
+      return out;
+    }
+    function calcATR(candles,period=14){
+      if(candles.length<period+1) return null; const trs=[]; for(let i=1;i<candles.length;i++){ const c=candles[i],p=candles[i-1]; trs.push(Math.max(c.high-c.low,Math.abs(c.high-p.close),Math.abs(c.low-p.close))); }
+      if(trs.length<period) return null; let atr=trs.slice(0,period).reduce((a,b)=>a+b,0)/period; for(let i=period;i<trs.length;i++){ atr=(atr*(period-1)+trs[i])/period; } return atr;
+    }
+    function calcBB(closes,times,period=20,stdMult=2){
+      if(closes.length<period) return null;
+      const upper=[],middle=[],lower=[];
+      for(let i=period-1;i<closes.length;i++){
+        const slice=closes.slice(i-period+1,i+1); const sma=slice.reduce((a,b)=>a+b,0)/period;
+        const variance=slice.reduce((a,b)=>a+Math.pow(b-sma,2),0)/period; const std=Math.sqrt(variance);
+        const t=times[i]; middle.push({time:t,value:sma}); upper.push({time:t,value:sma+std*stdMult}); lower.push({time:t,value:sma-std*stdMult});
+      }
+      return {upper,middle,lower};
+    }
+    function calcVWAP(candles){ let pv=0,v=0; for(const k of candles){ const tp=(k.high+k.low+k.close)/3; pv+=tp*k.volume; v+=k.volume; } return v? pv/v:null; }
+
+    /**********************
+     * Confluence Engine
+     **********************/
+    class Confluence{
+      constructor(){ this.proposals=[]; this.lastSignal=0; this.lastDir=null; this.scoreBuy=0; this.scoreSell=0; }
+      add(strategy,dir,reason,score){ const now=Date.now(); this.proposals=this.proposals.filter(p=>(now-p.t)<3000); this.proposals.push({s:strategy,d:dir,reason,score,t:now}); this.evaluate(); }
+      evaluate(){
+        const now=Date.now(); const active=this.proposals.filter(p=>(now-p.t)<3000);
+        const grp=(dir)=>active.filter(p=>p.d===dir).reduce((s,p)=>s+p.score,0);
+        let b=grp('buy'), s=grp('sell');
+        // Immune & Divine ağırlık etkileri
+        const infl=getKnightInfluence(); const divine=divineWeightBoost();
+        b *= (1 + (infl.trend||0)*0.2 + divine*0.2);
+        s *= (1 + (infl.aggressive||0)*0.2 + divine*0.2);
+        State.scoreBuy=b; State.scoreSell=s; renderSigBars();
+        // eşik
+        const th=3.0;
+        if(b>th && b>s+0.5) this.generate('buy',active.filter(p=>p.d==='buy'));
+        else if(s>th && s>b+0.5) this.generate('sell',active.filter(p=>p.d==='sell'));
+      }
+      generate(dir,contributors){
+        const now=Date.now(); if(now-this.lastSignal<15000) return; // genel cooldown
+        if(this.lastDir && this.lastDir!==dir && now-this.lastSignal<20000){ // ters yön histerezis
+          const th=3.0; if((dir==='buy'?State.scoreBuy:State.scoreSell) < th+2) return;
+        }
+        this.lastSignal=now; this.lastDir=dir;
+        const signal={
+          id:`sig_${now}`, timestamp:now, symbol:State.symbol,
+          direction:dir, price:State.price, score:dir==='buy'?State.scoreBuy:State.scoreSell,
+          contributors:contributors.map(c=>({strategy:c.s,eff:c.score})), status: 'pending'
+        };
+        addPendingSignal(signal);
+        toast(`Aday sinyal: ${dir.toUpperCase()} @ ${fmt(signal.price, State.price>1000?2:3)} (Skor ${signal.score.toFixed(1)})`,'warning');
+      }
+    }
+    const Confl=new Confluence();
+
+    /**********************
+     * Stratejiler
+     **********************/
+    class Strategy{ constructor(name){ this.name=name; this.live=true; this.cool=10000; this.last=0;} propose(dir,reason,score){ const now=Date.now(); if(now-this.last<this.cool) return; this.last=now; Confl.add(this.name,dir,reason,score);} }
+    class VelocityScalping extends Strategy{
+      constructor(){ super('velocity'); this.buf=[]; }
+      onTrade(t){ const now=Date.now(); this.buf.push({t:now,p:t.price}); this.buf=this.buf.filter(x=>now-x.t<2000); if(this.buf.length<10) return;
+        const f=this.buf[0], l=this.buf[this.buf.length-1]; const ch=(l.p-f.p)/f.p;
+        if(ch>0.001) this.propose('buy',`VelUp ${ (ch*100).toFixed(2)}%`,4);
+        else if(ch<-0.001) this.propose('sell',`VelDn ${ (ch*100).toFixed(2)}%`,4);
+      }
+    }
+    class SupportResistance extends Strategy{
+      constructor(){ super('sr'); }
+      onClose(){ const c=State.candles; if(c.length<60) return; const recent=c.slice(-60);
+        const last=recent[recent.length-1]; const maxH=Math.max(...recent.map(x=>x.high)), minL=Math.min(...recent.map(x=>x.low));
+        const dt=(maxH-last.close)/last.close, db=(last.close-minL)/last.close;
+        if(dt>0 && dt<0.0015 && last.close<last.open) this.propose('sell','Direnç Red',3);
+        if(db>0 && db<0.0015 && last.close>last.open) this.propose('buy','Destek Tepki',3);
+      }
+    }
+    class VWAPReversion extends Strategy{
+      constructor(){ super('vwap'); }
+      onClose(){ const pr=State.price, vwap=State.indicators.vwap, atr=State.indicators.atr; if(!pr||!vwap||!atr) return;
+        const dev=atr/pr; const diff=(pr-vwap)/vwap;
+        if(diff>1.0*dev) this.propose('sell','VWAP Üstü Aşırı Sapma',3);
+        if(diff<-1.0*dev) this.propose('buy','VWAP Altı Aşırı Sapma',3);
+      }
+    }
+    const STRATS=[ new VelocityScalping(), new SupportResistance(), new VWAPReversion() ];
+
+    /**********************
+     * Sinyal Yönetimi
+     **********************/
+    function addPendingSignal(sig){
+      State.pendingSignals.push(sig);
+      // Onay: mum kapanışı sonrası yönde
+    }
+    function tryActivatePending(closedCandle){
+      const toAct=[];
+      State.pendingSignals=State.pendingSignals.filter(s=>{
+        if(s.timestamp<closedCandle.time){
+          const bullish = closedCandle.close>closedCandle.open, bearish=!bullish;
+          const ok = (s.direction==='buy' && bullish) || (s.direction==='sell' && bearish);
+          if(ok) toAct.push(s); else toast(`Aday sinyal iptal: ${s.direction.toUpperCase()}`,'danger');
+          return false;
+        }
+        return true;
+      });
+      toAct.forEach(activateSignal);
+    }
+    function dynamicTpSl(sig){
+      const atr=State.indicators.atr, rr=1.5; if(!atr||!State.price) {
+        sig.tp = sig.direction==='buy'? sig.price*1.005 : sig.price*0.995;
+        sig.sl = sig.direction==='buy'? sig.price*0.995 : sig.price*1.005;
+        sig.slDist = Math.abs(sig.price-sig.sl);
+        return;
+      }
+      const slDist=atr*(1.2); const tpDist=slDist*rr;
+      if(sig.direction==='buy'){ sig.sl=sig.price-slDist; sig.tp=sig.price+tpDist; }
+      else { sig.sl=sig.price+slDist; sig.tp=sig.price-tpDist; }
+      sig.slDist=slDist;
+    }
+    function activateSignal(sig){
+      sig.status='active'; dynamicTpSl(sig);
+      State.signals.unshift(sig); if(State.signals.length>200) State.signals.pop();
+      toast(`AKTİF: ${sig.direction.toUpperCase()} @ ${fmt(sig.price, State.price>1000?2:3)} | TP ${fmt(sig.tp,2)} SL ${fmt(sig.sl,2)}`,'success');
+    }
+    function manageOpenSignals(){
+      if(!State.running||!State.price) return;
+      const price=State.price;
+      State.signals.filter(s=>s.status==='active' && s.symbol===State.symbol).forEach(s=>{
+        if(s.direction==='buy'){
+          if(price>=s.tp) closeSignal(s,'tp');
+          else if(price<=s.sl) closeSignal(s,'sl');
+        }else{
+          if(price<=s.tp) closeSignal(s,'tp');
+          else if(price>=s.sl) closeSignal(s,'sl');
+        }
+      });
+    }
+    function closeSignal(sig,res){
+      sig.status=res; State.stats.total++; State.stats[res]++; toast(`Sinyal ${sig.id.slice(-6)}: ${res.toUpperCase()}`,(res==='tp'?'success':'danger'));
+      // Knight ödülü/cezası + tanrısal bless/curse
+      if(res==='tp'){
+        KnightEnergy.forEach((_,i)=> KnightEnergy[i]=clamp(KnightEnergy[i]+0.02,0,2));
+        blessGod(Math.floor(Math.random()*16),0.02);
+        blessDivine(Math.floor(Math.random()*DIVINES.length),0.02);
+      }else{
+        KnightEnergy.forEach((_,i)=> KnightEnergy[i]=clamp(KnightEnergy[i]-0.01,0,2));
+        curseGod(Math.floor(Math.random()*16),0.02);
+        curseDivine(Math.floor(Math.random()*DIVINES.length),0.02);
+      }
+      renderImmortals(); renderDivine(); renderHonor();
+    }
+
+    /**********************
+     * Binance Bağlantıları (Gerçek Veri)
+     **********************/
+    let wsMain=null, reconnects=0, reconnectTO=0;
+    async function fetchHistory(){
+      try{
+        log(`Geçmiş veriler çekiliyor: ${State.symbol} ${State.timeframe}`);
+        const url=`https://fapi.binance.com/fapi/v1/klines?symbol=${State.symbol}&interval=${State.timeframe}&limit=500`;
+        const r=await fetch(url); if(!r.ok) throw new Error(r.statusText); const data=await r.json();
+        State.candles=data.map(d=>({time:+d[0],open:+d[1],high:+d[2],low:+d[3],close:+d[4],volume:+d[5]}));
+        ChartMan.setData(State.candles);
+        computeIndicators();
+      }catch(e){ log('Geçmiş veri hatası: '+e.message); toast('Geçmiş veriler çekilemedi','danger'); }
+    }
+    function connectWS(){
+      disconnectWS(); reconnects=0;
+      const sy=State.symbol.toLowerCase(), tf=State.timeframe;
+      const streams=[`${sy}@ticker`, `${sy}@depth20@100ms`, `${sy}@aggTrade`, `${sy}@kline_${tf}`].join('/');
+      const url=`wss://fstream.binance.com/stream?streams=${streams}`;
+      wsMain=new WebSocket(url);
+      wsMain.onopen=()=>{ log('WS bağlandı'); toast('WebSocket bağlı','success'); reconnects=0; };
+      wsMain.onmessage=(ev)=>{ const msg=JSON.parse(ev.data); handleStream(msg.stream,msg.data); };
+      wsMain.onerror=(e)=>{ console.error('WS error',e); };
+      wsMain.onclose=()=>{
+        if(!State.running) return;
+        reconnects++; const wait=Math.min(30000, 2000*Math.pow(2,reconnects-1));
+        log(`WS kapandı. ${Math.round(wait/1000)} sn sonra yeniden denenecek...`); toast('WS bağlantı kesildi','warning');
+        clearTimeout(reconnectTO); reconnectTO=setTimeout(connectWS, wait);
+      };
+    }
+    function disconnectWS(){
+      if(wsMain){ try{ wsMain.onclose=null; wsMain.close(1000,'client'); }catch(e){} wsMain=null; }
+      clearTimeout(reconnectTO);
+    }
+    function handleStream(stream,data){
+      const type=stream.split('@')[1];
+      if(type==='ticker'){
+        State.price=+data.c; State.change24h=+data.P; State.vol24h=+data.q; renderTicker(); manageOpenSignals();
+      }else if(type.startsWith('depth')){
+        State.orderbook = {bids:data.b.map(([p,q])=>[+p,+q]), asks:data.a.map(([p,q])=>[+p,+q])};
+        Heatmap.draw(State.orderbook, State.price);
+      }else if(type.startsWith('kline')){
+        const k=data.k; const last=State.candles[State.candles.length-1];
+        const cur={time:k.t,open:+k.o,high:+k.h,low:+k.l,close:+k.c,volume:+k.v};
+        if(last && last.time===cur.time){ State.candles[State.candles.length-1]=cur; }
+        else { State.candles.push(cur); if(State.candles.length>500) State.candles.shift(); }
+        ChartMan.update(k);
+        State.lastKlineOpen = k.t;
+        updateCountdown();
+        if(k.x){ // mum kapandı
+          computeIndicators(); tryActivatePending(cur); runCloseStrats();
+        }
+      }else if(type==='aggTrade'){
+        const t={price:+data.p,qty:+data.q,isBuyerMaker:data.m,time:data.T};
+        runTradeStrats(t);
+      }
+    }
+
+    /**********************
+     * Göstergeleri Hesapla
+     **********************/
+    function computeIndicators(){
+      if(State.candles.length===0) return;
+      const c=State.candles, closes=c.map(x=>x.close), times=c.map(x=>x.time);
+      State.indicators.rsi = calcRSI(closes,14);
+      State.indicators.atr = calcATR(c,14);
+      State.indicators.bbands = calcBB(closes,times,20,2);
+      State.indicators.vwap = calcVWAP(c);
+      renderHonor();
+    }
+
+    /**********************
+     * Strateji Çalıştırma
+     **********************/
+    function runTradeStrats(trade){ STRATS.forEach(s=>s.onTrade && s.onTrade(trade)); }
+    function runCloseStrats(){ STRATS.forEach(s=>s.onClose && s.onClose()); }
+
+    /**********************
+     * Sayaç (mum kapanışına)
+     **********************/
+    function updateCountdown(){
+      if(!State.lastKlineOpen) return $('cd-count').textContent='--:--';
+      const tfMs=tfToMs(State.timeframe); const next=State.lastKlineOpen+tfMs; let rem=next-now();
+      if(rem<0 || rem>tfMs) rem=tfMs - (now()%tfMs);
+      rem=Math.max(0,rem);
+      const m=Math.floor(rem/60000), s=Math.floor((rem%60000)/1000); const txt=`${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+      $('cd-count').textContent=txt; $('chart-countdown').textContent=txt;
+    }
+    function tfToMs(tf){
+      const u=tf.slice(-1), v=parseInt(tf.slice(0,-1)); if(u==='m')return v*60*1000; if(u==='h')return v*3600*1000; if(u==='d')return v*86400*1000; return 60000;
+    }
+
+    /**********************
+     * Tema / UI Kontrolleri
+     **********************/
+    function applyTheme(t){ document.documentElement.setAttribute('data-theme', t); localStorage.setItem('theme',t); ChartMan.fit(); Heatmap.resize(); }
+    $('theme-btn').onclick=()=>{
+      const t=State.theme; const next=t==='dark'?'light': (t==='light'?'war':'dark'); State.theme=next; applyTheme(next);
+    };
+
+    $('start-btn').onclick=async()=>{
+      if(State.running) return;
+      State.running=true; $('start-btn').disabled=true; $('stop-btn').disabled=false;
+      State.symbol=$('symbol-input').value.toUpperCase().trim(); if(!State.symbol.endsWith('USDT')) State.symbol+='USDT';
+      State.timeframe=$('tf-select').value;
+      $('tk-symbol').textContent = State.symbol.replace('USDT','/USDT');
+      // 16 worker başlat
+      if(workers.length===0){ for(let i=0;i<16;i++){ workers.push(makeWorker(GODS[i],i)); }}
+      await fetchHistory();
+      connectWS();
+      toast('Sistem başlatıldı','success');
+    };
+    $('stop-btn').onclick=()=>{
+      if(!State.running) return;
+      State.running=false; $('start-btn').disabled=false; $('stop-btn').disabled=true;
+      disconnectWS(); toast('Sistem durduruldu','danger');
+    };
+    $('symbol-input').addEventListener('change',async(e)=>{
+      const sym=e.target.value.toUpperCase().trim(); State.symbol=sym.endsWith('USDT')? sym : sym+'USDT';
+      $('tk-symbol').textContent= State.symbol.replace('USDT','/USDT');
+      if(State.running){ disconnectWS(); await fetchHistory(); connectWS(); }
+    });
+    $('tf-select').addEventListener('change',async(e)=>{
+      State.timeframe=e.target.value; if(State.running){ disconnectWS(); await fetchHistory(); connectWS(); }
+    });
+
+    $('zoom-in').onclick=()=>ChartMan.zoom(0.9);
+    $('zoom-out').onclick=()=>ChartMan.zoom(1.1);
+    $('zoom-reset').onclick=()=>ChartMan.fit();
+
+    $('bless-btn').onclick=()=>{
+      blessGod(Math.floor(Math.random()*16),0.03); blessDivine(Math.floor(Math.random()*DIVINES.length),0.02);
+      toast('Lütuf verildi','success'); renderHonor();
+    };
+    $('curse-btn').onclick=()=>{
+      curseGod(Math.floor(Math.random()*16),0.03); curseDivine(Math.floor(Math.random()*DIVINES.length),0.02);
+      toast('Lanet uygulandı','warning'); renderHonor();
+    };
+
+    /**********************
+     * Başlatma
+     **********************/
+    (function init(){
+      applyTheme(State.theme);
+      ChartMan.init('live-chart');
+      Heatmap.init('heatmap');
+      renderTicker(); renderSigBars(); renderImmortals(); renderDivine(); renderHonor();
+      setInterval(updateCountdown, 1000);
+      // Basit bir GOD bless döngüsü (zamanla dinamizm)
+      setInterval(()=> { const i=Math.floor(Math.random()*16); blessGod(i,0.005); }, 5000);
+      // Knight enerji yavaş düşümü (denge)
+      setInterval(()=> { for(let i=0;i<KnightEnergy.length;i++) KnightEnergy[i]=clamp(KnightEnergy[i]-0.005,0,2); renderImmortals(); }, 7000);
+    })();
+
+    /**********************
+     * LOG
+     **********************/
+    function log(m){ const el=$('logs'); if(!el) return; const d=document.createElement('div'); d.textContent=`[${new Date().toLocaleTimeString()}] ${m}`; el.appendChild(d); el.scrollTop=el.scrollHeight; }
+
+    /**********************
+     * Basit Risk / Kilitleme (Celestial Curse)
+     **********************/
+    function checkCurse(){
+      // ani yüksek volatilite + düşüş => korumaya geç
+      const ch = State.change24h||0; const atr=State.indicators.atr||0; const pr=State.price||0;
+      if(pr && atr/pr > 0.02 && ch< -3){
+        document.documentElement.setAttribute('data-theme','war');
+        toast('Gökyüzünden Lanet: Koruma Modu!','danger',6000);
+      }
+    }
+    setInterval(checkCurse, 5000);
+  </script>
+</body>
+</html>
