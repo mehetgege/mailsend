@@ -1,0 +1,976 @@
+<!DOCTYPE html>
+<html lang="tr" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ULTIMATE TRADING KOMUTA MERKEZİ v3.0</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/lightweight-charts@3.8.0/dist/lightweight-charts.standalone.production.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tsparticles-slim@2.12.0/tsparticles.slim.bundle.min.js"></script>
+
+    <style>
+        :root {
+            --background-dark: #0d1117; --panel-bg-dark: #161b22; --text-main-dark: #c9d1d9; --text-secondary-dark: #8b949e; --border-color-dark: #30363d; --input-bg-dark: #010409; --hover-bg-dark: #21262d; --primary-dark: #58a6ff;
+            --background-light: #ffffff; --panel-bg-light: #f6f8fa; --text-main-light: #24292f; --text-secondary-light: #57606a; --border-color-light: #d0d7de; --input-bg-light: #f0f2f5; --hover-bg-light: #e8eaed; --primary-light: #0969da;
+            --war-mode-bg: linear-gradient(145deg, #4d0000 0%, #000000 75%); --war-mode-panel-bg: rgba(255, 0, 0, 0.08); --war-mode-border: #8B0000; --war-mode-text: #ff5858; --war-mode-primary: #ffc107;
+            --positive: #28a745; --negative: #dc3545; --neutral: #ffc107;
+            
+            /* Panteon Renkleri - Geliştirilmiş */
+            --metatron-color: #3b82f6; --metatron-glow: rgba(59, 130, 246, 0.3); --metatron-bg: rgba(59, 130, 246, 0.1);
+            --uriel-color: #f59e0b; --uriel-glow: rgba(245, 158, 11, 0.3); --uriel-bg: rgba(245, 158, 11, 0.1);
+            --raphael-color: #10b981; --raphael-glow: rgba(16, 185, 129, 0.3); --raphael-bg: rgba(16, 185, 129, 0.1);
+            --gabriel-color: #8b5cf6; --gabriel-glow: rgba(139, 92, 246, 0.3); --gabriel-bg: rgba(139, 92, 246, 0.1);
+            --michael-color: #ef4444; --michael-glow: rgba(239, 68, 68, 0.3); --michael-bg: rgba(239, 68, 68, 0.1);
+            
+            /* Cosmic Effects */
+            --cosmic-gradient: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(139, 92, 246, 0.1) 50%, rgba(16, 185, 129, 0.1) 100%);
+            --panel-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            --floating-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+            --glow-animation: pantheonGlow 2s ease-in-out infinite alternate;
+            
+            --ticker-height: 30px; 
+            --signal-bar-height: 40px;
+            --header-min-height: 40px;
+        }
+        /* Fullscreen modda gizlenecek elemanlar */
+        body.fullscreen-chart #super-top-ticker,
+        body.fullscreen-chart #signal-progress-bar-container,
+        body.fullscreen-chart .header,
+        body.fullscreen-chart .panel-title {
+            display: none !important;
+        }
+
+        /* Fullscreen modda chart'ı büyütme */
+        body.fullscreen-chart .container { padding-top: 0 !important; height: 100vh !important; }
+        body.fullscreen-chart .main-grid { height: 100vh !important; margin: 0 !important; }
+        body.fullscreen-chart .center-panel { flex-grow: 1 !important; height: 100vh !important; border-radius: 0 !important; margin: 0 !important; }
+        body.fullscreen-chart .data-container { height: 100% !important; }
+        body.fullscreen-chart #chart-container-view,
+        body.fullscreen-chart #live-chart { height: 100% !important; flex-grow: 1 !important; }
+        body.fullscreen-chart .heatmap-container { display: none !important; }
+        body.fullscreen-chart .chart-zoom-controls { background: rgba(0,0,0,0.7); }
+        body.fullscreen-chart #exit-fullscreen-btn { display: block !important; }
+        body.fullscreen-chart #chart-countdown-overlay { display: block !important; }
+
+        [data-theme="light"] { --background: var(--background-light); --panel-bg: var(--panel-bg-light); --text-main: var(--text-main-light); --text-secondary: var(--text-secondary-light); --border-color: var(--border-color-light); --input-bg: var(--input-bg-light); --hover-bg: var(--hover-bg-light); --primary: var(--primary-light); }
+        [data-theme="dark"] { --background: var(--background-dark); --panel-bg: var(--panel-bg-dark); --text-main: var(--text-main-dark); --text-secondary: var(--text-secondary-dark); --border-color: var(--border-color-dark); --input-bg: var(--input-bg-dark); --hover-bg: var(--hover-bg-dark); --primary: var(--primary-dark); }
+        [data-theme="war"] { --background: var(--war-mode-bg); --panel-bg: var(--war-mode-panel-bg); --text-main: var(--war-mode-text); --text-secondary: #ffaaaa; --border-color: var(--war-mode-border); --input-bg: rgba(255, 255, 255, 0.05); --hover-bg: rgba(255, 255, 255, 0.1); --primary: var(--war-mode-primary); }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Roboto Mono', monospace; font-size: 12px; background: var(--background); color: var(--text-main); overflow: hidden; transition: background 0.5s, color 0.5s; }
+        
+        #super-top-ticker { display: flex; position: fixed; top: 0; left: 0; width: 100%; background: var(--panel-bg); border-bottom: 1px solid var(--border-color); padding: 2px 10px; z-index: 1100; align-items: center; justify-content: space-between; font-size: 11px; font-weight: 700; height: var(--ticker-height); }
+        .super-top-left { display: flex; align-items: center; gap: 10px; flex-shrink: 0;}
+        #ticker-bar-symbol { color: var(--primary); }
+        #ticker-bar-price { color: var(--text-main); font-size: 12px; }
+        .super-top-right-buttons { display: flex; gap: 5px; }
+
+        .container { display: flex; flex-direction: column; height: 100vh; padding-top: calc(var(--ticker-height) + var(--signal-bar-height)); }
+
+        .header { background: var(--panel-bg); border: 1px solid var(--border-color); border-radius: 6px; flex-shrink: 0; box-shadow: 0 2px 10px rgba(0,0,0,0.2); margin: 5px; position: relative; }
+        .header-top-bar { display: flex; align-items: center; width: 100%; padding: 5px 15px; min-height: var(--header-min-height); justify-content: space-between; cursor: pointer; font-weight: 700; font-size: 16px; color: var(--primary); }
+        .header-collapsible-content { transition: max-height 0.35s ease-in-out, opacity 0.3s ease, padding 0.35s ease, visibility 0.35s; max-height: 300px; opacity: 1; overflow: hidden; visibility: visible; padding: 0 15px 8px 15px; }
+        body.header-collapsed .header-collapsible-content { max-height: 0; opacity: 0; visibility: hidden; padding-top: 0; padding-bottom: 0; }
+
+        .main-controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding-bottom: 8px; }
+        .form-control { background: var(--input-bg); color: var(--text-main); border: 1px solid var(--border-color); border-radius: 4px; padding: 4px 8px; font-family: 'Roboto Mono', monospace; }
+        
+        .status { display: flex; align-items: center; gap: 5px; font-size: 11px; padding: 4px 8px; border: 1px solid var(--border-color); border-radius: 4px; }
+        .status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--negative); transition: background-color 0.5s; }
+        .status-dot.online { background: var(--positive); animation: pulse 2s infinite; }
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 #28a745b3; } 70% { box-shadow: 0 0 0 6px #28a74500; } 100% { box-shadow: 0 0 0 0 #28a74500; } }
+        [data-theme="war"] .status-dot.online { background: var(--war-mode-primary); animation: war-pulse 1s infinite; }
+        @keyframes war-pulse { 0% { box-shadow: 0 0 0 0 #ffc107b3; } 70% { box-shadow: 0 0 0 6px #ffc10700; } 100% { box-shadow: 0 0 0 0 #28a74500; } }
+        .btn { padding: 4px 12px; border: 1px solid var(--border-color); background: var(--panel-bg); color: var(--text-main); border-radius: 4px; cursor: pointer; transition: all 0.2s; }
+        .btn:hover { background: var(--hover-bg); border-color: var(--primary); }
+        .btn-success { background: var(--positive); color: white; border-color: var(--positive); } .btn-danger { background: var(--negative); color: white; border-color: var(--negative); }
+        .btn-tiny { padding: 2px 6px; font-size: 10px; line-height: 1; min-width: 0; white-space: nowrap; }
+        
+        .main-grid { display: grid; grid-template-columns: 1fr; gap: 5px; flex-grow: 1; margin: 5px; overflow: hidden; height: calc(100% - var(--header-min-height) - 10px - var(--ticker-height) - var(--signal-bar-height)); }
+        body.header-collapsed .main-grid { height: calc(100vh - var(--ticker-height) - var(--signal-bar-height) - 10px); margin-top: 0; } 
+        
+        .panel { display: flex; flex-direction: column; background: var(--panel-bg); border: 1px solid var(--border-color); border-radius: 6px; overflow: hidden; position: relative;}
+        .panel-title { font-weight: 700; font-size: 13px; color: var(--primary); padding: 8px; border-bottom: 1px solid var(--border-color); flex-shrink: 0; display: flex; justify-content: space-between; align-items: center;}
+        .panel-content { padding: 10px; overflow-y: auto; flex-grow: 1; }
+        .settings-group { margin-bottom: 15px; } .form-group { margin-bottom: 8px; } .form-label { display: block; font-size: 11px; color: var(--text-secondary); margin-bottom: 4px; }
+        .checkbox-label { display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 12px; padding: 4px 0;}
+        
+        .price-display { display: grid; grid-template-columns: repeat(2, 1fr); gap: 5px; width: 100%; border: 1px solid var(--border-color); border-radius: 4px; padding: 8px; font-size: 10px; margin-top: 8px; } 
+        .price-item .price-label { color: var(--text-secondary); } 
+        .price-item .price-value { font-size: 18px; font-weight: 700; }
+        .price-item.countdown { grid-column: 1 / span 2; display: flex; justify-content: center; align-items: center; font-size: 14px; font-weight: 700; color: var(--primary); padding-top: 5px;}
+        
+        .center-panel { display: grid; grid-template-rows: 1fr; gap: 5px; padding: 0 !important; } 
+        .data-container { display: grid; grid-template-rows: 1fr auto; overflow: hidden; height: 100%; } 
+        .data-grid { position: relative; overflow: hidden; min-height: 0; } 
+
+        #live-chart { width: 100%; height: 100%; } 
+        .heatmap-container { display: grid; grid-template-rows: auto 1fr; border-top: 1px solid var(--border-color); }
+        #orderbook-heatmap { width: 100%; height: 100%; display: block; }
+
+        .chart-zoom-controls { position: absolute; top: 10px; right: 10px; display: flex; gap: 5px; z-index: 100; }
+        .chart-zoom-controls .btn-tiny { background: rgba(1, 4, 9, 0.7); backdrop-filter: blur(2px); }
+
+        #exit-fullscreen-btn {
+            position: absolute; top: 10px; right: 10px; z-index: 101; 
+            background: rgba(1, 4, 9, 0.7); color: white; border-radius: 4px; 
+            padding: 2px 6px; font-size: 16px; cursor: pointer; border: 1px solid var(--border-color);
+            line-height: 1;
+        }
+        #chart-countdown-overlay {
+            position: absolute; top: 10px; left: 10px; z-index: 100; 
+            background: rgba(1, 4, 9, 0.7); padding: 4px 8px; border-radius: 4px; 
+            color: var(--primary); font-size: 14px; font-weight: bold;
+        }
+
+        .data-table-container { width: 100%; height: 100%; overflow: auto; }
+        .data-table { width: 100%; border-collapse: collapse; font-size: 11px; }
+        .data-table th, .data-table td { padding: 6px 8px; text-align: left; border-bottom: 1px solid var(--border-color); white-space: nowrap;}
+        .data-table th { font-weight: 700; position: sticky; top: 0; background: var(--panel-bg); z-index: 10;}
+        .data-table tr:hover { background: var(--hover-bg); }
+        .signal-buy { background-color: #28a74514; } .signal-sell { background-color: #dc354514; }
+        .signal-tp { background-color: #28a74533; } .signal-sl { background-color: #dc354533; }
+        .signal-pending { background-color: #ffc1071a; } /* Neutral/warning color with transparency */
+
+        .stat-item { display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid var(--border-color); font-size: 12px; }
+        .stat-item:last-child { border-bottom: none; } .stat-label { color: var(--text-secondary); } .stat-value { font-weight: 700; }
+        .btn-sm { padding: 1px 4px; font-size: 9px; margin-left: 4px; border-radius: 3px; cursor: pointer;}
+        ::-webkit-scrollbar { width: 6px; height: 6px; } ::-webkit-scrollbar-track { background: transparent; } ::-webkit-scrollbar-thumb { background: var(--text-secondary); border-radius: 3px; }
+        .notifications { 
+            position: fixed; 
+            bottom: 15px; 
+            left: 15px;
+            z-index: 2000; 
+            width: 280px;
+        }
+        .notification { 
+            background: rgba(22, 27, 34, 0.9);
+            backdrop-filter: blur(4px);
+            border: 1px solid var(--border-color); 
+            border-left-width: 4px; 
+            border-radius: 4px; 
+            padding: 8px 12px;
+            font-size: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3); 
+            margin-top: 8px; 
+            animation: slide-in 0.3s ease-out;
+        }
+        @keyframes slide-in {
+            from { transform: translateX(-100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .notification.success { border-left-color: var(--positive); } 
+        .notification.danger { border-left-color: var(--negative); } 
+        .notification.warning { border-left-color: var(--neutral); }
+        
+        aside#settings-panel, aside#analytics-panel { display: none !important; }
+        .hidden-view { display: none !important; } 
+
+        /* YENİ LOG PANELİ STİLLERİ */
+        #log-modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: none; justify-content: center; align-items: center; z-index: 2550; }
+        #log-modal-overlay.visible { display: flex; }
+        .log-modal-content { background: var(--panel-bg); border: 1px solid var(--border-color); border-radius: 8px; width: 95%; max-width: 1000px; height: 90%; display: flex; flex-direction: column; box-shadow: 0 8px 30px rgba(0,0,0,0.4); }
+        .log-modal-header { padding: 10px 15px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; font-weight: 700; font-size: 14px; color: var(--primary); }
+        .log-modal-header .close-btn { background: none; border: none; font-size: 20px; color: var(--text-secondary); cursor: pointer; padding: 0 5px; line-height: 1; }
+        .log-modal-body { padding: 0; overflow-y: auto; flex-grow: 1; }
+        #log-output { font-family: 'Roboto Mono', monospace; font-size: 11px; color: var(--text-secondary); padding: 10px; margin: 0; white-space: pre-wrap; word-break: break-all; }
+        #log-output .log-error { color: var(--negative); }
+        #log-output .log-warn { color: var(--neutral); }
+        #log-output .log-info { color: var(--positive); }
+
+        
+        aside#settings-panel, aside#analytics-panel { display: none !important; }
+        .hidden-view { display: none !important; } 
+
+        #settings-modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: flex; justify-content: center; align-items: center; z-index: 2500; opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0.3s ease; }
+        #settings-modal-overlay.visible { opacity: 1; visibility: visible; }
+        .settings-modal-content { background: var(--panel-bg); border: 1px solid var(--border-color); border-radius: 8px; width: 90%; max-width: 900px; max-height: 90%; display: flex; flex-direction: column; box-shadow: 0 8px 30px rgba(0,0,0,0.4); transform: translateY(20px); transition: transform 0.3s ease; }
+        #settings-modal-overlay.visible .settings-modal-content { transform: translateY(0); }
+        .settings-modal-header { padding: 12px 15px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; font-weight: 700; font-size: 15px; color: var(--primary); }
+        .settings-modal-header .close-btn { background: none; border: none; font-size: 20px; color: var(--text-secondary); cursor: pointer; padding: 0 5px; line-height: 1; }
+        .settings-modal-header .close-btn:hover { color: var(--negative); }
+        .settings-modal-body { padding: 15px; overflow-y: auto; flex-grow: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .settings-modal-footer { padding: 12px 15px; border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end; gap: 10px; }
+
+        /* Yeni Sinyal Barı */
+        #signal-progress-bar-container {
+            display: flex; gap: 5px; width: 100%; padding: 5px 10px; background: var(--panel-bg); 
+            border-bottom: 1px solid var(--border-color); justify-content: space-around; align-items: center;
+            position: fixed; top: var(--ticker-height); left: 0; z-index: 1099;
+            height: var(--signal-bar-height);
+        }
+        .signal-bar-wrapper { flex: 1; text-align: center; }
+        .signal-bar-label { font-size: 10px; color: var(--text-secondary); margin-bottom: 3px; }
+        .signal-bar { width: 100%; height: 10px; background: var(--input-bg); border: 1px solid var(--border-color); border-radius: 5px; overflow: hidden; position: relative; }
+        .signal-bar-fill { height: 100%; width: 0%; transition: width 0.2s ease-out; position: absolute; left: 0; top: 0; background: linear-gradient(90deg, transparent, var(--positive)); }
+        .signal-bar-fill.buy { background: linear-gradient(90deg, transparent, var(--positive)); }
+        .signal-bar-fill.sell { background: linear-gradient(90deg, transparent, var(--negative)); }
+        .signal-score-text { font-size: 9px; margin-top: 2px; color: var(--primary); }
+
+        /* Resizable Handle */
+        .resize-handle { position: absolute; bottom: 0; left: 0; width: 100%; height: 8px; cursor: ns-resize; background: var(--border-color); z-index: 10; border-top: 1px solid var(--border-color); }
+        .center-panel.resizing { user-select: none; }
+
+        /* Metinlerin yanlışlıkla seçilmesini engelle */
+        .btn, .panel-title, .header-top-bar, .signal-bar-label, .form-label {
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+        }
+
+        @media screen and (max-width: 768px) {
+            .desktop-only { display: none !important; }
+            .mobile-only { display: flex !important; align-items: center; }
+
+            .container { 
+                padding-top: calc(var(--ticker-height) + var(--signal-bar-height)); 
+                padding-bottom: var(--header-min-height); 
+            }
+            #signal-progress-bar-container { top: var(--ticker-height); }
+            
+            .header { 
+                order: 2; 
+                position: fixed;
+                bottom: 0; 
+                left: 0;
+                right: 0;
+                width: 100%; 
+                z-index: 1000; 
+                margin: 0; 
+                border-radius: 0; 
+                border: none; 
+                border-top: 1px solid var(--border-color); 
+            }
+            /* Butonlar ve başlık için yeni ve daha basit düzen */
+            .header-top-bar { 
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 0 10px; 
+                min-height: var(--header-min-height);
+            }
+            .header-center-title {
+                cursor: pointer;
+                flex-grow: 1;
+                text-align: center;
+            }
+            .header-left-controls, .header-right-controls {
+                display: flex;
+                gap: 8px;
+            }
+            #mobile-toggle-controls-btn, .header-right-controls .btn {
+                font-size: 16px;
+                padding: 5px 10px;
+            }
+            /* Mobilde masaüstü başlığını gizle */
+            .header-center-title .header-title-text {
+                display: none;
+            }
+
+            .header-collapsible-content { padding: 0; }
+            .header-collapsible-content .main-controls { flex-direction: column; align-items: center; padding: 0; width: 100%; }
+            .form-control, .btn, .status { width: 100%; text-align: center; padding: 8px 10px; font-size: 11px; }
+            .status { justify-content: center; }
+            .price-display { grid-template-columns: repeat(2, 1fr); margin-top: 10px; }
+            .price-item .price-value { font-size: 14px; } 
+            
+            .main-grid { 
+                order: 1; 
+                margin: 0;
+                height: 100%;
+                display: flex;
+                flex-direction: column;
+            }
+            .center-panel { 
+                order: 1; 
+                flex-grow: 1;
+                height: 100%;
+                border: none;
+                border-radius: 0; 
+                background: transparent;
+                box-shadow: none; 
+                margin: 0; 
+            }
+            .center-panel > .panel-title { display: none; }
+            .data-container { 
+                flex-direction: column; 
+                height: 100%; 
+                padding: 5px;
+            }
+            .data-grid { 
+                height: 100%;
+                flex-grow: 1;
+            }
+            #live-chart { height: 100%; width: 100%; } 
+            .heatmap-container { height: 150px; flex-shrink: 0; margin-top: 10px; border-top: 1px solid var(--border-color); padding-top: 10px; }
+            .heatmap-container .panel-title { border-bottom: none; margin-bottom: 5px; }
+            .settings-modal-content { width: 95%; margin: 10px; }
+            .settings-modal-body { grid-template-columns: 1fr; gap: 15px; }
+            .super-top-right-buttons { display: none; }
+            .resize-handle { display: none; }
+            #chart-countdown-overlay { font-size: 12px; padding: 3px 6px; }
+
+            body.fullscreen-chart .main-grid { height: 100vh; }
+            body.fullscreen-chart .center-panel { height: 100vh; }
+        }
+
+              /* Pantheon Floating Panels */
+        .pantheon-panel {
+            position: fixed;
+            background: var(--cosmic-gradient);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            box-shadow: var(--floating-shadow);
+            z-index: 1000;
+            padding: 16px;
+            min-width: 200px;
+            font-family: 'Roboto Mono', monospace;
+        }
+
+        /* YENİ STİL: Kehanet panelini saniyenin altına dikey olarak konumlandır */
+        aside#kehanet-panel.kehanet-panel {
+            /* Konumlandırma */
+            top: 150px;
+            left: 10px;
+            right: auto;
+            bottom: auto;
+            z-index: 101;
+            
+            /* Görünüm */
+            background: rgba(1, 4, 9, 0.75);
+            backdrop-filter: blur(3px);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            box-shadow: none;
+            padding: 6px 10px;
+            min-width: unset;
+            width: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        /* Her bir satırın stili */
+        .kp-row {
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+            padding: 0;
+            border-bottom: none;
+            gap: 6px;
+        }
+
+        .kp-row:last-child {
+            border-bottom: none;
+        }
+        
+        /* Etiket stili (Seans, Koruma vs.) */
+        .kp-key {
+            color: var(--text-secondary);
+            font-size: 11px;
+            font-weight: 500;
+        }
+
+        /* Değer stili */
+        .kp-val {
+            color: var(--primary);
+            font-size: 11px;
+            font-weight: 700;
+            text-align: left;
+        }
+
+        /* Cosmic Effects Layer */
+        #cosmic-effects-layer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* Effects Canvas - TSParticles için gelişmiş canvas */
+        #effects-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        /* Pantheon Animasyonları */
+        @keyframes pantheonGlow {
+            0% { box-shadow: 0 0 20px rgba(59, 130, 246, 0.3); }
+            100% { box-shadow: 0 0 30px rgba(59, 130, 246, 0.6); }
+        }
+
+        @keyframes firstLightPulse {
+            0% { opacity: 0; transform: scale(0.6); filter: blur(4px); }
+            25% { opacity: 1; transform: scale(1.0); filter: blur(2px); }
+            100% { opacity: 0; transform: scale(1.8); filter: blur(8px); }
+        }
+
+        .pantheon-glow {
+            animation: var(--glow-animation);
+        }
+
+        /* Elçi CSS Class'ları */
+        .elci-name.metatron { 
+            color: var(--metatron-color); 
+            text-shadow: 0 0 8px var(--metatron-glow);
+        }
+        .elci-name.uriel { 
+            color: var(--uriel-color); 
+            text-shadow: 0 0 8px var(--uriel-glow);
+        }
+        .elci-name.raphael { 
+            color: var(--raphael-color); 
+            text-shadow: 0 0 8px var(--raphael-glow);
+        }
+        .elci-name.gabriel { 
+            color: var(--gabriel-color); 
+            text-shadow: 0 0 8px var(--gabriel-glow);
+        }
+        .elci-name.michael { 
+            color: var(--michael-color); 
+            text-shadow: 0 0 8px var(--michael-glow);
+        }
+
+        /* Floating Panteon Panel */
+        #panteon-panel {
+            position: fixed;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 1200;
+            background: var(--cosmic-gradient);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 12px;
+            width: 250px;
+            box-shadow: var(--floating-shadow);
+            font-size: 11px;
+            display: none;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .panteon-header {
+            font-weight: 700;
+            color: var(--primary);
+            text-align: center;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 6px;
+            margin-bottom: 4px;
+            font-size: 13px;
+        }
+
+        .elci-display {
+            display: grid;
+            grid-template-columns: auto 1fr auto;
+            align-items: center;
+            gap: 10px;
+            padding: 4px 0;
+        }
+
+        .elci-reputation { 
+            font-weight: 700; 
+            font-size: 12px; 
+            text-align: right; 
+        }
+
+        .elci-mode {
+            background: var(--input-bg); 
+            border: 1px solid var(--border-color);
+            border-radius: 4px; 
+            padding: 2px 6px; 
+            font-size: 9px;
+            text-align: center; 
+            font-weight: 700;
+            min-width: 50px;
+        }
+
+        .elci-mode.inanc_li { 
+            color: var(--positive); 
+            border-color: var(--positive); 
+            background: rgba(40, 167, 69, 0.1);
+        }
+        .elci-mode.supheci { 
+            color: var(--neutral); 
+            border-color: var(--neutral); 
+            background: rgba(255, 193, 7, 0.1);
+        }
+        .elci-mode.kiyamet { 
+            color: var(--negative); 
+            border-color: var(--negative); 
+            background: rgba(220, 53, 69, 0.1);
+            animation: pulse-danger 1.5s infinite;
+        }
+
+        @keyframes pulse-danger {
+            0% { box-shadow: 0 0 0 0 #dc354580; } 
+            70% { box-shadow: 0 0 0 5px #dc354500; } 
+            100% { box-shadow: 0 0 0 0 #dc354500; }
+        }
+
+        /* Kehanet Panel */
+        #kehanet-panel {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1200;
+            display: flex;
+            gap: 8px;
+            background: var(--cosmic-gradient);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 8px;
+            box-shadow: var(--floating-shadow);
+        }
+
+        #kehanet-panel .btn-tiny { 
+            font-size: 10px; 
+            padding: 4px 8px;
+            border-radius: 6px;
+        }
+
+        /* Mahşerin Atlıları Global Efektleri */
+        body.horseman-war::after {
+            content: ''; 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%;
+            background: radial-gradient(circle, transparent 50%, #8B000040);
+            pointer-events: none; 
+            z-index: -1; 
+            animation: flicker 0.2s infinite alternate;
+        }
+
+        body.horseman-famine::after {
+            content: ''; 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%;
+            background: #57606a33;
+            pointer-events: none; 
+            z-index: -1;
+        }
+
+        body.horseman-plague::after {
+            content: ''; 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%;
+            background: rgba(128, 128, 0, 0.2);
+            backdrop-filter: blur(2px);
+            pointer-events: none; 
+            z-index: -1;
+        }
+
+        body.horseman-death::after {
+            content: ''; 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            pointer-events: none; 
+            z-index: -1;
+        }
+
+        @keyframes flicker { 
+            from { opacity: 0.8; } 
+            to { opacity: 1; } 
+        }
+
+        /* Mobile düzenlemeleri */
+        @media screen and (max-width: 768px) {
+            #panteon-panel { 
+                display: none !important;
+            }
+            
+            #kehanet-panel {
+                bottom: 60px;
+                right: 10px;
+                gap: 4px;
+                padding: 4px;
+            }
+            
+            #kehanet-panel .btn-tiny {
+                font-size: 8px;
+                padding: 2px 4px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <aside class="pantheon-panel kehanet-panel" id="kehanet-panel">
+        <div class="kp-row">
+            <span class="kp-key">📅 Seans</span>
+            <span class="kp-val" id="kp-session">—</span>
+        </div>
+        <div class="kp-row">
+            <span class="kp-key">🛡️ Koruma</span>
+            <span class="kp-val" id="kp-guardian">Aktif</span>
+        </div>
+        <div class="kp-row">
+            <span class="kp-key">⚖️ Rejim</span>
+            <span class="kp-val" id="kp-regime">—</span>
+        </div>
+        <div class="kp-row">
+            <span class="kp-key">⚔️ Nabız</span>
+            <span class="kp-val" id="kp-pulse">—</span>
+        </div>
+    </aside>
+
+    <div id="cosmic-effects-layer"></div>
+    
+    <div id="effects-canvas"></div>
+
+    <aside id="panteon-panel">
+        <div class="panteon-header">🏛️ PANTEON</div>
+        <div class="elci-display">
+            <span class="elci-name metatron">Metatron</span>
+            <span class="elci-mode" id="metatron-mode">İNANÇLI</span>
+            <span class="elci-reputation" id="metatron-rep">100</span>
+        </div>
+        <div class="elci-display">
+            <span class="elci-name uriel">Uriel</span>
+            <span class="elci-mode" id="uriel-mode">İNANÇLI</span>
+            <span class="elci-reputation" id="uriel-rep">100</span>
+        </div>
+        <div class="elci-display">
+            <span class="elci-name raphael">Raphael</span>
+            <span class="elci-mode" id="raphael-mode">İNANÇLI</span>
+            <span class="elci-reputation" id="raphael-rep">100</span>
+        </div>
+    </aside>
+<div id="kehanet-panel">
+        <button id="prophecy-defensive" class="btn btn-tiny" title="Savunmacı Mod">🛡️</button>
+        <button id="prophecy-neutral" class="btn btn-tiny" title="Dengeli Mod">⚖️</button>
+        <button id="prophecy-aggressive" class="btn btn-tiny" title="Saldırgan Mod">⚔️</button>
+    </div>
+
+        <div id="super-top-ticker">
+        <div class="super-top-left">
+            <span id="ticker-bar-symbol"></span>
+            <span id="ticker-bar-price"></span>
+        </div>
+        <div class="super-top-right-buttons desktop-only">
+            <button id="panteon-toggle-btn" class="btn btn-tiny" title="Panteon Paneli">🏛️</button>
+            <button id="main-controls-btn" class="btn btn-tiny">Komuta Merkezi</button>
+            <button id="chart-view-btn" class="btn btn-tiny">Grafik</button>
+            <button id="heatmap-view-btn" class="btn btn-tiny">Isı Haritası</button>
+            <button id="fullscreen-chart-btn" class="btn btn-tiny">Tam Ekran Grafik</button>
+            <button id="honor-board-btn" class="btn btn-tiny">Şeref Tablosu</button>
+            <button id="banned-board-btn" class="btn btn-tiny">Banlılar</button>
+            <button id="open-settings-modal-btn" class="btn btn-tiny">Ayarlar</button>
+        </div>
+                <div class="super-top-right-buttons mobile-only">
+            <button id="mobile-panteon-toggle-btn" class="btn btn-tiny" title="Panteon">🏛️</button>
+            <button id="mobile-fullscreen-chart-btn" class="btn btn-tiny">Tam Ekran</button>
+            <button id="mobile-open-log-modal-btn" class="btn btn-tiny">📜 Log</button>
+            <button id="mobile-open-settings-modal-btn" class="btn btn-tiny btn-success">Ayarlar</button>
+        </div>
+
+    </div>
+
+
+    <div id="signal-progress-bar-container">
+        <div class="signal-bar-wrapper">
+            <div class="signal-bar-label">METATRON GÜVENİ</div>
+            <div class="signal-bar">
+                <div id="buy-signal-bar-fill" class="signal-bar-fill buy"></div>
+            </div>
+            <div id="buy-signal-score-text" class="signal-score-text">0.0</div>
+        </div>
+        <div class="signal-bar-wrapper">
+            <div class="signal-bar-label">URIEL CESARETİ</div>
+            <div class="signal-bar">
+                <div id="sell-signal-bar-fill" class="signal-bar-fill sell"></div>
+            </div>
+            <div id="sell-signal-score-text" class="signal-score-text">0.0</div>
+        </div>
+    </div>
+<div class="container">
+                                <header class="header">
+            <div id="header-main-bar" class="header-top-bar">
+                <div class="header-left-controls">
+                    <button id="mobile-toggle-controls-btn" class="btn btn-tiny mobile-only" title="Kontrolleri Aç/Kapat">☰</button>
+                </div>
+                <div class="header-center-title" title="Paneli aç/kapatmak için çift tıkla">
+                    <span class="header-title-text">KOMUTA MERKEZİ KONTROLLERİ</span>
+                </div>
+                <div class="header-right-controls">
+                    <button id="mobile-chart-view-btn" class="btn btn-tiny mobile-only" title="Grafik">📈</button>
+                    <button id="mobile-heatmap-view-btn" class="btn btn-tiny mobile-only" title="Isı Haritası">🔥</button>
+                    <button id="mobile-honor-board-btn" class="btn btn-tiny mobile-only" title="Şeref Tablosu">🏆</button>
+                    <button id="mobile-banned-board-btn" class="btn btn-tiny mobile-only" title="Banlılar">BAN</button>
+                </div>
+            </div>
+            <div class="header-collapsible-content">
+                <div class="main-controls">
+                    <input type="text" id="symbol-input" class="form-control" placeholder="Örn: BTC, ETH, SOL">
+                    <select id="timeframe-select" class="form-control">
+                        <option value="1m">1m</option><option value="5m">5m</option><option value="15m" selected>15m</option><option value="1h">1h</option><option value="4h">4h</option>
+                    </select>
+                    <div class="status">
+                        <div id="connection-status" class="status-dot"></div>
+                        <span id="connection-text">BAĞLANTI YOK</span>
+                    </div>
+                    <button id="theme-toggle-btn" class="btn">Tema</button>
+                    <button id="start-btn" class="btn btn-success">SİSTEMİ BAŞLAT</button>
+                    <button id="stop-btn" class="btn btn-danger" disabled>DURDUR</button>
+                    <button id="clear-markers-btn" class="btn">Grafik Sinyallerini Sil</button> 
+                </div>
+<div class="price-display">
+                    <div class="price-item"><div class="price-label">FİYAT</div><div class="price-value" id="current-price">-</div></div>
+                    <div class="price-item"><div class="price-label">24s DEĞİŞİM</div><div class="price-value" id="price-change-24h">-</div></div>
+                    <div class="price-item"><div class="price-label">24s HACİM</div><div class="price-value" id="volume-24h">-</div></div>
+                    <div class="price-item"><div class="price-label">VOLATİLİTE (ATR)</div><div class="price-value" id="atr-value">-</div></div>
+                    <div class="price-item countdown"><span id="candle-countdown">--:--</span></div>
+                </div>
+            </div>
+        </header>
+
+
+
+
+        <main class="main-grid">
+            <section class="center-panel panel">
+                <div class="data-container">
+                    <div class="data-grid" id="chart-container-view">
+                        <div id="live-chart"></div>
+                        <div class="chart-zoom-controls"> 
+                            <button id="chart-zoom-in" class="btn btn-tiny">+</button>
+                            <button id="chart-zoom-out" class="btn btn-tiny">-</button>
+                            <button id="chart-zoom-reset" class="btn btn-tiny">Sıfırla</button>
+                        </div>
+                        <button id="exit-fullscreen-btn" class="btn btn-tiny hidden-view" title="Tam Ekrandan Çık">&times;</button>
+                        <div id="chart-countdown-overlay" class="hidden-view">--:--</div>
+                    </div>
+                    <div class="heatmap-container" id="heatmap-container-view">
+                        <div class="panel-title" style="border-top: 1px solid var(--border-color); border-bottom: none;">EMİR DEFTERİ ISI HARİTASI</div>
+                        <canvas id="orderbook-heatmap"></canvas>
+                    </div>
+                </div>
+                <div class="resize-handle"></div>
+            </section>
+        </main>
+    </div>
+    
+<div id="notifications-container" class="notifications"></div>
+
+    <div id="settings-modal-overlay">
+        <div class="settings-modal-content">
+            <div class="settings-modal-header">
+                <span>AYARLAR & OPTİMİZASYON</span>
+                <button class="close-btn" id="close-settings-modal-btn">&times;</button>
+            </div>
+            <div class="settings-modal-body">
+                <div class="settings-group">
+                    <div class="panel-title" style="margin-bottom: 10px;">Temel Parametreler</div>
+                    <div class="form-group"><label class="form-label">Min. Uyum Skoru (1-10)</label><input type="range" id="modal-confluence-threshold" class="form-control" min="1" max="10" value="3" step="1"></div>
+                    <div class="form-group"><label class="form-label">RSI Periyodu</label><input type="number" id="modal-param-rsi-period" class="form-control" value="14"></div>
+                    <div class="form-group"><label class="form-label">ATR Periyodu</label><input type="number" id="modal-param-atr-period" class="form-control" value="14"></div>
+                    <div class="form-group"><label class="form-label">Duvar Tespiti (BTC Miktarı)</label><input type="number" id="modal-param-wall-btc" class="form-control" value="20"></div>
+                    <div class="form-group"><label class="form-label">Risk/Ödül Oranı (R/R)</label><input type="number" id="modal-param-rr-ratio" class="form-control" value="1.5" step="0.1"></div>
+                </div>
+                <div
+<div class="settings-group">
+                    <div class="panel-title" style="margin-bottom: 10px;">Cooldown Ayarları</div>
+                    <div class="form-group"><label class="form-label">Genel Sinyal Cooldown (ms)</label><input type="number" id="modal-signal-cooldown-ms" class="form-control" value="15000" min="0" step="100"></div>
+                    <div class="form-group"><label class="form-label">Aynı Yön Sinyal Cooldown (ms)</label><input type="number" id="modal-same-direction-cooldown-ms" class="form-control" value="30000" min="0" step="100"></div>
+                    <div class="form-group"><label class="form-label">Ters Yön Cooldown (ms)</label><input type="number" id="modal-opposite-direction-cooldown-ms" class="form-control" value="20000" min="0" step="100"></div>
+                    <div class="form-group"><label class="form-label">Ters Yön Histerezis (+Puan)</label><input type="number" id="modal-reverse-hysteresis-points" class="form-control" value="2" min="0" step="1"></div>
+                    <div class="form-group"><label class="form-label">Proposal Timeout (ms)</label><input type="number" id="modal-proposal-timeout-ms" class="form-control" value="3000" min="500" step="100"></div>
+                    <div class="form-group"><label class="form-label">Strateji Teklifi Cooldown (ms)</label><input type="number" id="modal-strategy-proposal-cooldown-ms" class="form-control" value="10000" min="0" step="100"></div>
+                </div>
+<div id="kehanet-panel">
+        <button id="prophecy-defensive" class="btn btn-tiny" title="Savunmacı Mod">🛡️</button>
+        <button id="prophecy-neutral" class="btn btn-tiny" title="Dengeli Mod">⚖️</button>
+        <button id="prophecy-aggressive" class="btn btn-tiny" title="Saldırgan Mod">⚔️</button>
+    </div>
+
+        <div id="super-top-ticker">
+        <div class="super-top-left">
+            <span id="ticker-bar-symbol"></span>
+            <span id="ticker-bar-price"></span>
+        </div>
+        <div class="super-top-right-buttons desktop-only">
+            <button id="panteon-toggle-btn" class="btn btn-tiny" title="Panteon Paneli">🏛️</button>
+            <button id="main-controls-btn" class="btn btn-tiny">Komuta Merkezi</button>
+            <button id="chart-view-btn" class="btn btn-tiny">Grafik</button>
+            <button id="heatmap-view-btn" class="btn btn-tiny">Isı Haritası</button>
+            <button id="fullscreen-chart-btn" class="btn btn-tiny">Tam Ekran Grafik</button>
+            <button id="honor-board-btn" class="btn btn-tiny">Şeref Tablosu</button>
+            <button id="banned-board-btn" class="btn btn-tiny">Banlılar</button>
+            <button id="open-settings-modal-btn" class="btn btn-tiny">Ayarlar</button>
+        </div>
+                <div class="super-top-right-buttons mobile-only">
+            <button id="mobile-panteon-toggle-btn" class="btn btn-tiny" title="Panteon">🏛️</button>
+            <button id="mobile-fullscreen-chart-btn" class="btn btn-tiny">Tam Ekran</button>
+            <button id="mobile-open-log-modal-btn" class="btn btn-tiny">📜 Log</button>
+            <button id="mobile-open-settings-modal-btn" class="btn btn-tiny btn-success">Ayarlar</button>
+        </div>
+
+    </div>
+
+
+    <div id="signal-progress-bar-container">
+        <div class="signal-bar-wrapper">
+            <div class="signal-bar-label">METATRON GÜVENİ</div>
+            <div class="signal-bar">
+                <div id="buy-signal-bar-fill" class="signal-bar-fill buy"></div>
+            </div>
+            <div id="buy-signal-score-text" class="signal-score-text">0.0</div>
+        </div>
+        <div class="signal-bar-wrapper">
+            <div class="signal-bar-label">URIEL CESARETİ</div>
+            <div class="signal-bar">
+                <div id="sell-signal-bar-fill" class="signal-bar-fill sell"></div>
+            </div>
+            <div id="sell-signal-score-text" class="signal-score-text">0.0</div>
+        </div>
+    </div>
+<div class="container">
+                                <header class="header">
+            <div id="header-main-bar" class="header-top-bar">
+                <div class="header-left-controls">
+                    <button id="mobile-toggle-controls-btn" class="btn btn-tiny mobile-only" title="Kontrolleri Aç/Kapat">☰</button>
+                </div>
+                <div class="header-center-title" title="Paneli aç/kapatmak için çift tıkla">
+                    <span class="header-title-text">KOMUTA MERKEZİ KONTROLLERİ</span>
+                </div>
+                <div class="header-right-controls">
+                    <button id="mobile-chart-view-btn" class="btn btn-tiny mobile-only" title="Grafik">📈</button>
+                    <button id="mobile-heatmap-view-btn" class="btn btn-tiny mobile-only" title="Isı Haritası">🔥</button>
+                    <button id="mobile-honor-board-btn" class="btn btn-tiny mobile-only" title="Şeref Tablosu">🏆</button>
+                    <button id="mobile-banned-board-btn" class="btn btn-tiny mobile-only" title="Banlılar">BAN</button>
+                </div>
+            </div>
+            <div class="header-collapsible-content">
+                <div class="main-controls">
+                    <input type="text" id="symbol-input" class="form-control" placeholder="Örn: BTC, ETH, SOL">
+                    <select id="timeframe-select" class="form-control">
+                        <option value="1m">1m</option><option value="5m">5m</option><option value="15m" selected>15m</option><option value="1h">1h</option><option value="4h">4h</option>
+                    </select>
+                    <div class="status">
+                        <div id="connection-status" class="status-dot"></div>
+                        <span id="connection-text">BAĞLANTI YOK</span>
+                    </div>
+                    <button id="theme-toggle-btn" class="btn">Tema</button>
+                    <button id="start-btn" class="btn btn-success">SİSTEMİ BAŞLAT</button>
+                    <button id="stop-btn" class="btn btn-danger" disabled>DURDUR</button>
+                    <button id="clear-markers-btn" class="btn">Grafik Sinyallerini Sil</button> 
+                </div>
+<div class="price-display">
+                    <div class="price-item"><div class="price-label">FİYAT</div><div class="price-value" id="current-price">-</div></div>
+                    <div class="price-item"><div class="price-label">24s DEĞİŞİM</div><div class="price-value" id="price-change-24h">-</div></div>
+                    <div class="price-item"><div class="price-label">24s HACİM</div><div class="price-value" id="volume-24h">-</div></div>
+                    <div class="price-item"><div class="price-label">VOLATİLİTE (ATR)</div><div class="price-value" id="atr-value">-</div></div>
+                    <div class="price-item countdown"><span id="candle-countdown">--:--</span></div>
+                </div>
+            </div>
+        </header>
+
+
+
+
+        <main class="main-grid">
+            <section class="center-panel panel">
+                <div class="data-container">
+                    <div class="data-grid" id="chart-container-view">
+                        <div id="live-chart"></div>
+                        <div class="chart-zoom-controls"> 
+                            <button id="chart-zoom-in" class="btn btn-tiny">+</button>
+                            <button id="chart-zoom-out" class="btn btn-tiny">-</button>
+                            <button id="chart-zoom-reset" class="btn btn-tiny">Sıfırla</button>
+                        </div>
+                        <button id="exit-fullscreen-btn" class="btn btn-tiny hidden-view" title="Tam Ekrandan Çık">&times;</button>
+                        <div id="chart-countdown-overlay" class="hidden-view">--:--</div>
+                    </div>
+                    <div class="heatmap-container" id="heatmap-container-view">
+                        <div class="panel-title" style="border-top: 1px solid var(--border-color); border-bottom: none;">EMİR DEFTERİ ISI HARİTASI</div>
+                        <canvas id="orderbook-heatmap"></canvas>
+                    </div>
+                </div>
+                <div class="resize-handle"></div>
+            </section>
+        </main>
+    </div>
+<div id="notifications-container" class="notifications"></div>
+
+    <div id="settings-modal-overlay">
+        <div class="settings-modal-content">
+            <div class="settings-modal-header">
+                <span>AYARLAR & OPTİMİZASYON</span>
+                <button class="close-btn" id="close-settings-modal-btn">&times;</button>
+            </div>
+            <div class="settings-modal-body">
+                <div class="settings-group">
+                    <div class="panel-title" style="margin-bottom: 10px;">Temel Parametreler</div>
+                    <div class="form-group"><label class="form-label">Min. Uyum Skoru (1-10)</label><input type="range" id="modal-confluence-threshold" class="form-control" min="1" max="10" value="3" step="1"></div>
+                    <div class="form-group"><label class="form-label">RSI Periyodu</label><input type="number" id="modal-param-rsi-period" class="form-control" value="14"></div>
+                    <div class="form-group"><label class="form-label">ATR Periyodu</label><input type="number" id="modal-param-atr-period" class="form-control" value="14"></div>
+                    <div class="form-group"><label class="form-label">Duvar Tespiti (BTC Miktarı)</label><input type="number" id="modal-param-wall-btc" class="form-control" value="20"></div>
+                    <div class="form-group"><label class="form-label">Risk/Ödül Oranı (R/R)</label><input type="number" id="modal-param-rr-ratio" class="form-control" value="1.5" step="0.1"></div>
+                </div>
+                <div
+<div class="settings-group">
+                    <div class="panel-title" style="margin-bottom: 10px;">Cooldown Ayarları</div>
+                    <div class="form-group"><label class="form-label">Genel Sinyal Cooldown (ms)</label><input type="number" id="modal-signal-cooldown-ms" class="form-control" value="15000" min="0" step="100"></div>
+                    <div class="form-group"><label class="form-label">Aynı Yön Sinyal Cooldown (ms)</label><input type="number" id="modal-same-direction-cooldown-ms" class="form-control" value="30000" min="0" step="100"></div>
+                    <div class="form-group"><label class="form-label">Ters Yön Cooldown (ms)</label><input type="number" id="modal-opposite-direction-cooldown-ms" class="form-control" value="20000" min="0" step="100"></div>
+                    <div class="form-group"><label class="form-label">Ters Yön Histerezis (+Puan)</label><input type="number" id="modal-reverse-hysteresis-points" class="form-control" value="2" min="0" step="1"></div>
+                    <div class="form-group"><label class="form-label">Proposal Timeout (ms)</label><input type="number" id="modal-proposal-timeout-ms" class="form-control" value="3000" min="500" step="100"></div>
+                    <div class="form-group"><label class="form-label">Strateji Teklifi Cooldown (ms)</label><input type="number" id="modal-strategy-proposal-cooldown-ms" class="form-control" value="10000" min="0" step="100"></div>
+                </div>
+                <div class="settings-group">
+                    <div class="panel-title" style="margin-bottom: 10px;">Gelişmiş Özellikler</div>
+                    <div class="form-group"><label class="checkbox-label"><input type="checkbox" id="modal-enable-spoof-detection" class="feature-toggle" checked> Spoof Tespiti</label></div>
+                    <div class="form-group"><label class="checkbox-label"><input type="checkbox" id="modal-enable-cusum-drift" class="feature-toggle" checked> CUSUM Sapma Tespiti</label></div>
+                    <div class="form-group"><label class="checkbox-label"><input type="checkbox" id="modal-enable-risk-guardian" class="feature-toggle" checked> Risk Koruyucu (Kill Switch)</label></div>
+                    <div class="form-group"><label class="checkbox-label"><input type="checkbox" id="modal-enable-auto-optimize" class="feature-toggle" checked> Oto-Optimizasyon</label></div>
+                    <div class="form-group"><label class="checkbox-label"><input type="checkbox" id="modal-enable-auto-toggle-strat" class="feature-toggle" checked> Stratejileri Oto-Ayarla</label></div>
+                    <div class="form-group"><label class="checkbox-label"><input type="checkbox" id="modal-enable-breakeven-trail" class="feature-toggle" checked> Maliyete Çek/Takip Eden SL</label></div>
+                    <div class="form-group"><label class="form-label">BE R Oranı</label><input type="number" id="modal-be-at-r" class="form-control" value="0.8" step="0.1"></div>
+                    <div class="form-group"><label class="form-label">Trailing Başlangıç R Oranı</label><input type="number" id="modal-trail-after-r" class="form-control" value="1.5" step="0.1"></div>
+                    <div class="form-group"><label class="form-label">Trailing Kârı R Oranı</label><input type="number" id="modal-trail-to-r" class="form-control" value="0.5" step="0.1"></div>
+                </div>
+<div class="settings-group">
+                    <div class="panel-title" style="margin-bottom: 10px;">Sinyal Teyit & Gelişmiş Filtreleme</div>
+                    <div class="form-group"><label class="checkbox-label"><input type="checkbox" id="modal-enable-candle-confirm" class="feature-toggle" checked> Sinyal için Mum Kapanışını Bekle</label></div>
+                    <div class="form-group"><label class="checkbox-label"><input type="checkbox" id="modal-enable-mtf-confirm" class="feature-toggle" checked> Üst Zaman Dilimi Trend Teyidi</label></div>
+                    <div class="form-group">
+                        <label class="form-label">MTF Zaman Dilimi</label>
+                        <select id="modal-mtf-timeframe" class="form-control">
+                            <option value="5m">5m</option>
+                            <option value="15m" selected>15m</option>
+                            <option value="1h">1h</option>
+                            <option value="4h">4h</option>
+                        </select>
+                    </div>
+                     <div class="form-group"><label class="checkbox-label"><input type="checkbox" id="modal-enable-dynamic-sizing" class="feature-toggle" checked> Sinyal Gücüne Göre Dinamik Boyutlandırma</label></div>
+                    <hr style="border-color: var(--border-color); margin: 10px 0;">
+                    <div class="form-group"><label class="checkbox-label"><input type="checkbox" id="modal-enable-tts" class="feature-toggle" checked> Sesli Bildirimler</label></div>
+                    <div class="form-group">
+                        <label class="form-label">Ses Seçimi</label>
+                        <select id="modal-tts-voice-select" class="form-control"></select>
+                    </div>
+                </div>
